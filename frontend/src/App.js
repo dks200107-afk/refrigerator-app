@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const SERVER_IP = "192.168.219.251";
-const API_BASE_URL = `http://${SERVER_IP}:5000`;
+const API_BASE_URL = "https://refrigerator-app-jivi.onrender.com";
 
 function App() {
   const [ingredients, setIngredients] = useState([]);

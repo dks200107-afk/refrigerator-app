@@ -1,4 +1,5 @@
 // backend/server.js
+// backend/server.js
 
 require('dotenv').config();
 
@@ -11,8 +12,29 @@ const Tesseract = require('tesseract.js');
 
 const app = express();
 
-app.use(cors());
+// ======================
+// CORS
+// ======================
+
+app.use(cors({
+  origin: '*'
+}));
+
 app.use(express.json());
+
+// ======================
+// ROOT
+// ======================
+
+app.get('/', (req, res) => {
+
+  res.send('냉장고 서버 정상 실행 중');
+
+});
+
+// ======================
+// multer
+// ======================
 
 const upload = multer({
   dest: 'uploads/'
@@ -52,7 +74,7 @@ let refrigerator = [
 ];
 
 // ======================
-// 1. 조회
+// 조회
 // ======================
 
 app.get('/api/ingredients', (req, res) => {
@@ -62,7 +84,7 @@ app.get('/api/ingredients', (req, res) => {
 });
 
 // ======================
-// 2. 추가
+// 추가
 // ======================
 
 app.post('/api/ingredients', (req, res) => {
@@ -95,7 +117,7 @@ app.post('/api/ingredients', (req, res) => {
 });
 
 // ======================
-// 3. 삭제
+// 삭제
 // ======================
 
 app.delete('/api/ingredients/:id', (req, res) => {
@@ -115,7 +137,7 @@ app.delete('/api/ingredients/:id', (req, res) => {
 });
 
 // ======================
-// 4. 수정
+// 수정
 // ======================
 
 app.put('/api/ingredients/:id', (req, res) => {
@@ -152,7 +174,7 @@ app.put('/api/ingredients/:id', (req, res) => {
 });
 
 // ======================
-// 5. OCR
+// OCR
 // ======================
 
 app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
@@ -167,7 +189,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     }
 
-    // OCR 분석
     const result = await Tesseract.recognize(
       req.file.path,
       'kor+eng'
@@ -179,7 +200,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     const possibleIngredients = [];
 
-    // 식재료 키워드
     const foodKeywords = [
       '우유',
       '계란',
@@ -215,7 +235,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       '사과'
     ];
 
-    // OCR 오인식 보정
     const correctionMap = {
       'AEH': '스팸',
       '심태': '김밥',
@@ -227,7 +246,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     lines.forEach(line => {
 
-      // 보정
       Object.keys(correctionMap).forEach(wrong => {
 
         if (line.includes(wrong)) {
@@ -243,7 +261,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
       });
 
-      // 일반 탐색
       foodKeywords.forEach(food => {
 
         if (line.includes(food)) {
@@ -261,7 +278,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     });
 
-    // 중복 제거
     const uniqueIngredients = [
       ...new Map(
         possibleIngredients.map(item => [
@@ -301,7 +317,7 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // ======================
-// 6. AI 레시피
+// AI 레시피
 // ======================
 
 app.get('/api/ai-recipe', async (req, res) => {
@@ -368,7 +384,7 @@ ${ingredientNames}
 });
 
 // ======================
-// 7. 쇼핑리스트
+// 쇼핑리스트
 // ======================
 
 app.get('/api/shopping-list', (req, res) => {
@@ -407,7 +423,7 @@ app.get('/api/shopping-list', (req, res) => {
 // 서버 실행
 // ======================
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
 

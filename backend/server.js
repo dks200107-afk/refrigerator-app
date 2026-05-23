@@ -1,12 +1,13 @@
 // backend/server.js
+
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const crypto = require('crypto');
 const Groq = require('groq-sdk');
-const Tesseract = require('tesseract.js')
-
-require('dotenv').config();
+const Tesseract = require('tesseract.js');
 
 const app = express();
 
@@ -15,11 +16,9 @@ app.use(express.json());
 
 const upload = multer({ dest: 'uploads/' });
 
-// Groq API 설정
-const apiKey =
-  process.env.GROQ_API_KEY;
-
-const groq = new Groq({ apiKey });
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 // 메모리 DB
 let refrigerator = [
@@ -44,23 +43,24 @@ let refrigerator = [
 ];
 
 
-// =======================================
-// 1. 식재료 목록 조회
-// =======================================
+// =============================
+// 1. 식재료 조회
+// =============================
 app.get('/api/ingredients', (req, res) => {
   res.json(refrigerator);
 });
 
 
-// =======================================
+// =============================
 // 2. 식재료 추가
-// =======================================
+// =============================
 app.post('/api/ingredients', (req, res) => {
+
   const { name, category, expiryDate } = req.body;
 
   if (!name || !category || !expiryDate) {
     return res.status(400).json({
-      error: '필수 입력 항목이 누락되었습니다.'
+      error: '필수 입력값 누락'
     });
   }
 
@@ -74,39 +74,37 @@ app.post('/api/ingredients', (req, res) => {
   refrigerator.push(newIngredient);
 
   res.status(201).json(newIngredient);
+
 });
 
 
-// =======================================
-// 3. 식재료 삭제 추가 ⭐
-// =======================================
+// =============================
+// 3. 식재료 삭제
+// =============================
 app.delete('/api/ingredients/:id', (req, res) => {
+
   const { id } = req.params;
 
-  // 삭제 전 존재 여부 확인
-  const existingItem = refrigerator.find(item => item.id === id);
-
-  if (!existingItem) {
-    return res.status(404).json({
-      error: '해당 식재료를 찾을 수 없습니다.'
-    });
-  }
-
-  // 삭제 처리
   refrigerator = refrigerator.filter(item => item.id !== id);
 
   res.json({
-    message: '식재료 삭제 완료',
-    deletedId: id
+    message: '삭제 완료'
   });
+
 });
 
 
-// 3. 영수증 OCR
+// =============================
+// 4. OCR 영수증 인식
+// =============================
 app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
+
   try {
+
     if (!req.file) {
-      return res.status(400).json({ error: '파일이 없습니다.' });
+      return res.status(400).json({
+        error: '파일이 없습니다.'
+      });
     }
 
     // OCR 실행
@@ -121,66 +119,103 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     const possibleIngredients = [];
 
-   const foodKeywords = [
-  '우유',
-  '계란',
-  '두부',
-  '대파',
-  '양파',
-  '김치',
-  '삼겹살',
-  '닭가슴살',
-  '콜라',
-  '치즈',
-  '햄',
-  '라면',
-  '아이스크림',
-  '스팸',
-  '야채',
-  '김밥',
-  '참치',
-  '만두',
-  '소시지',
-  '빵',
-  '과자',
-  '음료',
-  '사이다',
-  '김',
-  '쌀',
-  '고기',
-  '돼지',
-  '소고기',
-  '치킨',
-  '요거트',
-  '바나나',
-  '사과'
-];
+    // 기본 키워드
+    const foodKeywords = [
+      '우유',
+      '계란',
+      '두부',
+      '대파',
+      '양파',
+      '김치',
+      '삼겹살',
+      '닭가슴살',
+      '콜라',
+      '치즈',
+      '햄',
+      '라면',
+      '아이스크림',
+      '스팸',
+      '야채',
+      '김밥',
+      '참치',
+      '만두',
+      '소시지',
+      '빵',
+      '과자',
+      '음료',
+      '사이다',
+      '김',
+      '쌀',
+      '고기',
+      '돼지',
+      '소고기',
+      '치킨',
+      '요거트',
+      '바나나',
+      '사과'
+    ];
 
-const lines = text.split('\n');
+    // OCR 오인식 보정
+    const correctionMap = {
+      'AEH': '스팸',
+      '심태': '김밥',
+      '김반': '김밥',
+      '후레시참치': '참치'
+    };
 
-lines.forEach(line => {
-  foodKeywords.forEach(food => {
-    if (line.includes(food)) {
-      possibleIngredients.push({
-        id: crypto.randomUUID(),
-        name: food,
-        category: '냉장',
-        expiryDate: '2026-12-31'
+    const lines = text.split('\n');
+
+    lines.forEach(line => {
+
+      // 오인식 보정 탐색
+      Object.keys(correctionMap).forEach(wrong => {
+
+        if (line.includes(wrong)) {
+
+          possibleIngredients.push({
+            id: crypto.randomUUID(),
+            name: correctionMap[wrong],
+            category: '냉장',
+            expiryDate: '2026-12-31'
+          });
+
+        }
+
       });
-    }
-  });
-});
-const uniqueIngredients = [
-  ...new Map(
-    possibleIngredients.map(item => [item.name, item])
-  ).values()
-];
 
-    if (possibleIngredients.length === 0) {
+      // 일반 키워드 탐색
+      foodKeywords.forEach(food => {
+
+        if (line.includes(food)) {
+
+          possibleIngredients.push({
+            id: crypto.randomUUID(),
+            name: food,
+            category: '냉장',
+            expiryDate: '2026-12-31'
+          });
+
+        }
+
+      });
+
+    });
+
+    // 중복 제거
+    const uniqueIngredients = [
+      ...new Map(
+        possibleIngredients.map(item => [item.name, item])
+      ).values()
+    ];
+
+    // 아무것도 못 찾았을 경우
+    if (uniqueIngredients.length === 0) {
+
       return res.json({
         message: '식재료를 찾지 못했습니다.',
         ocrText: text
       });
+
     }
 
     refrigerator.push(...uniqueIngredients);
@@ -192,102 +227,121 @@ const uniqueIngredients = [
     });
 
   } catch (error) {
+
     console.error(error);
-    res.status(500).json({ error: 'OCR 처리 실패' });
+
+    res.status(500).json({
+      error: 'OCR 처리 실패'
+    });
+
   }
+
 });
 
 
-// =======================================
+// =============================
 // 5. AI 레시피 추천
-// =======================================
+// =============================
 app.get('/api/ai-recipe', async (req, res) => {
+
   try {
+
     const ingredientNames = refrigerator
       .map(item => item.name)
       .join(', ');
 
     if (!ingredientNames) {
+
       return res.json({
-        recipe:
-          '냉장고가 비어있네요! 식재료를 먼저 등록해 주세요.'
+        recipe: '냉장고가 비어있습니다.'
       });
+
     }
 
-    const chatCompletion =
-      await groq.chat.completions.create({
-        messages: [
-          {
-            role: 'user',
-            content: `
-현재 내 냉장고에 [${ingredientNames}] 재료들이 있어.
+    const chatCompletion = await groq.chat.completions.create({
 
-이 재료들을 최대한 활용해서 만들 수 있는
-맛있는 한국식 요리 레시피 1개를 추천해줘.
+      messages: [
+        {
+          role: 'user',
+          content: `
+현재 냉장고 재료:
+${ingredientNames}
 
-반드시 순수 한국어만 사용하고,
-줄바꿈을 예쁘게 해줘.
+이 재료를 최대한 활용한
+한국식 요리 레시피 1개 추천해줘.
+
+반드시:
+- 한글만 사용
+- 보기 쉽게 줄바꿈
+- 재료/조리법 구분
 `
-          }
-        ],
-        model: 'llama-3.1-8b-instant'
-      });
+        }
+      ],
 
-    let freeRecipe =
-      chatCompletion.choices[0]?.message?.content ||
-      '레시피를 생성할 수 없습니다.';
+      model: 'llama-3.1-8b-instant'
 
-    // AI 이상 문자 제거
-    freeRecipe = freeRecipe.replace(/【.*?】/g, '');
-    freeRecipe = freeRecipe.replace(/\[\d+\]/g, '');
-    freeRecipe = freeRecipe.trim();
+    });
+
+    let recipe =
+      chatCompletion.choices[0]?.message?.content
+      || '레시피 생성 실패';
+
+    recipe = recipe.replace(/\[\d+\]/g, '');
 
     res.json({
-      recipe: freeRecipe
+      recipe
     });
 
   } catch (error) {
-    console.error('AI 요청 에러:', error);
+
+    console.error(error);
 
     res.status(500).json({
-      error:
-        '무료 AI 레시피를 불러오는 중 오류가 발생했습니다.'
+      error: 'AI 레시피 생성 실패'
     });
+
   }
+
 });
 
 
-// =======================================
-// 6. 쇼핑 리스트 추천
-// =======================================
+// =============================
+// 6. 쇼핑리스트
+// =============================
 app.get('/api/shopping-list', (req, res) => {
+
   const today = new Date('2026-05-16');
 
   const urgentItems = refrigerator.filter(item => {
+
     const expiry = new Date(item.expiryDate);
 
     return expiry <= today;
+
   });
 
-  const shoppingList = urgentItems.map(
-    item => `${item.name} (유통기한 경과/재구매 필요)`
+  const shoppingList = urgentItems.map(item =>
+    `${item.name} 재구매 필요`
   );
 
   if (shoppingList.length === 0) {
+
     shoppingList.push(
-      '우유 (소비 패턴 분석 기반 추천 품목)'
+      '우유 구매 추천'
     );
+
   }
 
   res.json({
     shoppingList
   });
+
 });
 
 
-// =======================================
+// =============================
 // 서버 실행
-// =======================================
+// =============================
 const PORT = 5000;
 
 app.listen(PORT, () => {

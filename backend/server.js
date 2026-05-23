@@ -1,5 +1,4 @@
 // backend/server.js
-// backend/server.js
 
 require('dotenv').config();
 
@@ -57,19 +56,25 @@ let refrigerator = [
     id: '1',
     name: '서울우유 500ml',
     category: '냉장',
-    expiryDate: '2026-04-15'
+    expiryDate: '2026-04-15',
+    quantity: 70,
+    unit: '%'
   },
   {
     id: '2',
     name: '닭가슴살',
     category: '냉동',
-    expiryDate: '2026-06-20'
+    expiryDate: '2026-06-20',
+    quantity: 2,
+    unit: '개'
   },
   {
     id: '3',
     name: '양파',
     category: '실온',
-    expiryDate: '2026-05-25'
+    expiryDate: '2026-05-25',
+    quantity: 3,
+    unit: '개'
   }
 ];
 
@@ -92,7 +97,9 @@ app.post('/api/ingredients', (req, res) => {
   const {
     name,
     category,
-    expiryDate
+    expiryDate,
+    quantity,
+    unit
   } = req.body;
 
   if (!name || !category || !expiryDate) {
@@ -107,7 +114,9 @@ app.post('/api/ingredients', (req, res) => {
     id: crypto.randomUUID(),
     name,
     category,
-    expiryDate
+    expiryDate,
+    quantity: quantity || 100,
+    unit: unit || '%'
   };
 
   refrigerator.push(newIngredient);
@@ -147,7 +156,9 @@ app.put('/api/ingredients/:id', (req, res) => {
   const {
     name,
     category,
-    expiryDate
+    expiryDate,
+    quantity,
+    unit
   } = req.body;
 
   refrigerator = refrigerator.map(item => {
@@ -158,7 +169,9 @@ app.put('/api/ingredients/:id', (req, res) => {
         ...item,
         name,
         category,
-        expiryDate
+        expiryDate,
+        quantity,
+        unit
       };
 
     }
@@ -169,6 +182,93 @@ app.put('/api/ingredients/:id', (req, res) => {
 
   res.json({
     message: '수정 완료'
+  });
+
+});
+
+// ======================
+// 수량 감소
+// ======================
+
+app.patch('/api/ingredients/:id/decrease', (req, res) => {
+
+  const { id } = req.params;
+
+  refrigerator = refrigerator
+    .map(item => {
+
+      if (item.id === id) {
+
+        let newQuantity;
+
+        if (item.unit === '%') {
+
+          newQuantity = item.quantity - 10;
+
+        } else {
+
+          newQuantity = item.quantity - 1;
+
+        }
+
+        return {
+          ...item,
+          quantity: newQuantity
+        };
+
+      }
+
+      return item;
+
+    })
+    .filter(item => item.quantity > 0);
+
+  res.json({
+    message: '사용 완료'
+  });
+
+});
+
+// ======================
+// 수량 증가
+// ======================
+
+app.patch('/api/ingredients/:id/increase', (req, res) => {
+
+  const { id } = req.params;
+
+  refrigerator = refrigerator.map(item => {
+
+    if (item.id === id) {
+
+      let newQuantity;
+
+      if (item.unit === '%') {
+
+        newQuantity = Math.min(
+          item.quantity + 10,
+          100
+        );
+
+      } else {
+
+        newQuantity = item.quantity + 1;
+
+      }
+
+      return {
+        ...item,
+        quantity: newQuantity
+      };
+
+    }
+
+    return item;
+
+  });
+
+  res.json({
+    message: '수량 증가 완료'
   });
 
 });
@@ -254,7 +354,9 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
             id: crypto.randomUUID(),
             name: correctionMap[wrong],
             category: '냉장',
-            expiryDate: '2026-12-31'
+            expiryDate: '2026-12-31',
+            quantity: 1,
+            unit: '개'
           });
 
         }
@@ -269,7 +371,9 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
             id: crypto.randomUUID(),
             name: food,
             category: '냉장',
-            expiryDate: '2026-12-31'
+            expiryDate: '2026-12-31',
+            quantity: 1,
+            unit: '개'
           });
 
         }
@@ -389,26 +493,38 @@ ${ingredientNames}
 
 app.get('/api/shopping-list', (req, res) => {
 
-  const today = new Date('2026-05-16');
+  const shoppingList = [];
 
-  const urgentItems = refrigerator.filter(item => {
+  refrigerator.forEach(item => {
 
-    const expiry = new Date(item.expiryDate);
+    if (
+      item.unit === '%' &&
+      item.quantity <= 20
+    ) {
 
-    return expiry <= today;
+      shoppingList.push(
+        `${item.name} 거의 다 사용함`
+      );
 
-  });
+    }
 
-  const shoppingList = urgentItems.map(item => {
+    if (
+      item.unit === '개' &&
+      item.quantity <= 1
+    ) {
 
-    return `${item.name} 재구매 필요`;
+      shoppingList.push(
+        `${item.name} 재구매 추천`
+      );
+
+    }
 
   });
 
   if (shoppingList.length === 0) {
 
     shoppingList.push(
-      '우유 구매 추천'
+      '현재 구매 추천 품목 없음'
     );
 
   }

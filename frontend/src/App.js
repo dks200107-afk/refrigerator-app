@@ -1,22 +1,41 @@
 // frontend/src/App.js
-import React, { useState, useEffect } from 'react';
+// frontend/src/App.js
+
+import React, {
+  useState,
+  useEffect
+} from 'react';
+
 import axios from 'axios';
 
 const API_BASE_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://refrigerator-app-jivi.onrender.com'
-    : 'http://localhost:5000';
+  'https://refrigerator-app-jivi.onrender.com';
 
 function App() {
 
-  const [ingredients, setIngredients] = useState([]);
+  const [ingredients, setIngredients] =
+    useState([]);
 
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('냉장');
-  const [expiryDate, setExpiryDate] = useState('');
+  const [name, setName] =
+    useState('');
 
-  const [recipe, setRecipe] = useState('');
-  const [shoppingList, setShoppingList] = useState([]);
+  const [category, setCategory] =
+    useState('냉장');
+
+  const [expiryDate, setExpiryDate] =
+    useState('');
+
+  const [quantity, setQuantity] =
+    useState(100);
+
+  const [unit, setUnit] =
+    useState('%');
+
+  const [recipe, setRecipe] =
+    useState('');
+
+  const [shoppingList, setShoppingList] =
+    useState([]);
 
   // ======================
   // 재료 불러오기
@@ -67,12 +86,16 @@ function App() {
       {
         name,
         category,
-        expiryDate
+        expiryDate,
+        quantity,
+        unit
       }
     );
 
     setName('');
     setExpiryDate('');
+    setQuantity(100);
+    setUnit('%');
 
     fetchIngredients();
 
@@ -94,12 +117,22 @@ function App() {
 
     alert('OCR 분석 시작');
 
-    await axios.post(
-      `${API_BASE_URL}/api/ocr`,
-      formData
-    );
+    try {
 
-    fetchIngredients();
+      await axios.post(
+        `${API_BASE_URL}/api/ocr`,
+        formData
+      );
+
+      fetchIngredients();
+
+      alert('OCR 등록 완료');
+
+    } catch (error) {
+
+      alert('OCR 실패');
+
+    }
 
   };
 
@@ -109,7 +142,9 @@ function App() {
 
   const getAiRecipe = async () => {
 
-    setRecipe('AI 레시피 생성 중...');
+    setRecipe(
+      'AI 레시피 생성 중...'
+    );
 
     try {
 
@@ -137,9 +172,15 @@ function App() {
       `${API_BASE_URL}/api/shopping-list`
     );
 
-    setShoppingList(res.data.shoppingList);
+    setShoppingList(
+      res.data.shoppingList
+    );
 
   };
+
+  // ======================
+  // 렌더링
+  // ======================
 
   return (
 
@@ -162,9 +203,16 @@ function App() {
       </h1>
 
       {/* OCR */}
-      <section style={{ marginBottom: '25px' }}>
 
-        <h3>🧾 영수증 OCR 등록</h3>
+      <section
+        style={{
+          marginBottom: '25px'
+        }}
+      >
+
+        <h3>
+          🧾 영수증 OCR 등록
+        </h3>
 
         <label
           style={{
@@ -184,7 +232,9 @@ function App() {
             accept="image/*"
             capture="environment"
             onChange={handleOcrUpload}
-            style={{ display: 'none' }}
+            style={{
+              display: 'none'
+            }}
           />
 
         </label>
@@ -192,9 +242,16 @@ function App() {
       </section>
 
       {/* 직접 입력 */}
-      <section style={{ marginBottom: '25px' }}>
 
-        <h3>✏️ 식재료 직접 입력</h3>
+      <section
+        style={{
+          marginBottom: '25px'
+        }}
+      >
+
+        <h3>
+          ✏️ 식재료 직접 입력
+        </h3>
 
         <form
           onSubmit={handleSubmit}
@@ -209,7 +266,11 @@ function App() {
             type="text"
             placeholder="식재료 이름"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+
+              setName(e.target.value);
+
+            }}
             style={{
               padding: '10px'
             }}
@@ -217,22 +278,77 @@ function App() {
 
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+
+              setCategory(e.target.value);
+
+            }}
             style={{
               padding: '10px'
             }}
           >
 
-            <option value="냉장">냉장</option>
-            <option value="냉동">냉동</option>
-            <option value="실온">실온</option>
+            <option value="냉장">
+              냉장
+            </option>
+
+            <option value="냉동">
+              냉동
+            </option>
+
+            <option value="실온">
+              실온
+            </option>
+
+          </select>
+
+          <select
+            value={unit}
+            onChange={(e) => {
+
+              setUnit(e.target.value);
+
+            }}
+            style={{
+              padding: '10px'
+            }}
+          >
+
+            <option value="%">
+              %
+            </option>
+
+            <option value="개">
+              개
+            </option>
 
           </select>
 
           <input
+            type="number"
+            value={quantity}
+            onChange={(e) => {
+
+              setQuantity(
+                Number(e.target.value)
+              );
+
+            }}
+            style={{
+              padding: '10px'
+            }}
+          />
+
+          <input
             type="date"
             value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
+            onChange={(e) => {
+
+              setExpiryDate(
+                e.target.value
+              );
+
+            }}
             style={{
               padding: '10px'
             }}
@@ -255,264 +371,207 @@ function App() {
 
       </section>
 
-      {/* 재고 현황 */}
-      <section style={{ marginBottom: '25px' }}>
+      {/* 재고 */}
 
-        <h3>🛒 냉장고 재고 현황</h3>
+      <section
+        style={{
+          marginBottom: '25px'
+        }}
+      >
 
-        {['냉장', '냉동', '실온'].map(cat => (
+        <h3>
+          🛒 냉장고 재고 현황
+        </h3>
 
-          <div
-            key={cat}
-            style={{
-              marginBottom: '20px'
-            }}
-          >
+        {['냉장', '냉동', '실온']
+          .map(cat => (
 
-            <h4
+            <div
+              key={cat}
               style={{
-                color: '#2980b9'
+                marginBottom: '20px'
               }}
             >
-              {cat}
-            </h4>
 
-            {ingredients
-              .filter(item => item.category === cat)
-              .map(item => (
+              <h4
+                style={{
+                  color: '#2980b9'
+                }}
+              >
+                {cat}
+              </h4>
 
-                <div
-                  key={item.id}
-                  style={{
-                    background: '#f8f9fa',
-                    padding: '10px',
-                    marginBottom: '10px',
-                    borderRadius: '5px'
-                  }}
-                >
-
-                  {/* 기본 정보 */}
-                  <strong>{item.name}</strong>
+              {ingredients
+                .filter(item =>
+                  item.category === cat
+                )
+                .map(item => (
 
                   <div
+                    key={item.id}
                     style={{
-                      fontSize: '12px',
-                      color: '#666',
-                      marginTop: '3px',
-                      marginBottom: '8px'
+                      background: '#f8f9fa',
+                      padding: '12px',
+                      marginBottom: '10px',
+                      borderRadius: '8px'
                     }}
                   >
-                    유통기한: {item.expiryDate}
-                  </div>
 
-                  {/* 수정모드 */}
-                  {item.editing && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent:
+                          'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
 
-                    <div>
+                      <div>
 
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => {
+                        <strong>
+                          {item.name}
+                        </strong>
 
-                          const updated = ingredients.map(ing =>
+                        <div
+                          style={{
+                            marginTop: '5px',
+                            fontSize: '14px'
+                          }}
+                        >
+                          남은 양:
+                          {' '}
+                          {item.quantity}
+                          {item.unit}
+                        </div>
 
-                            ing.id === item.id
-                              ? {
-                                  ...ing,
-                                  name: e.target.value
-                                }
-                              : ing
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#666'
+                          }}
+                        >
+                          유통기한:
+                          {' '}
+                          {item.expiryDate}
+                        </div>
 
-                          );
+                      </div>
 
-                          setIngredients(updated);
+                    </div>
 
-                        }}
-                        style={{
-                          width: '100%',
-                          marginBottom: '5px',
-                          padding: '8px'
-                        }}
-                      />
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '5px',
+                        marginTop: '10px'
+                      }}
+                    >
 
-                      <select
-                        value={item.category}
-                        onChange={(e) => {
-
-                          const updated = ingredients.map(ing =>
-
-                            ing.id === item.id
-                              ? {
-                                  ...ing,
-                                  category: e.target.value
-                                }
-                              : ing
-
-                          );
-
-                          setIngredients(updated);
-
-                        }}
-                        style={{
-                          width: '100%',
-                          marginBottom: '5px',
-                          padding: '8px'
-                        }}
-                      >
-
-                        <option value="냉장">냉장</option>
-                        <option value="냉동">냉동</option>
-                        <option value="실온">실온</option>
-
-                      </select>
-
-                      <input
-                        type="date"
-                        value={item.expiryDate}
-                        onChange={(e) => {
-
-                          const updated = ingredients.map(ing =>
-
-                            ing.id === item.id
-                              ? {
-                                  ...ing,
-                                  expiryDate: e.target.value
-                                }
-                              : ing
-
-                          );
-
-                          setIngredients(updated);
-
-                        }}
-                        style={{
-                          width: '100%',
-                          marginBottom: '5px',
-                          padding: '8px'
-                        }}
-                      />
+                      {/* 감소 */}
 
                       <button
                         onClick={async () => {
 
-                          await axios.put(
-                            `${API_BASE_URL}/api/ingredients/${item.id}`,
-                            item
+                          await axios.patch(
+                            `${API_BASE_URL}/api/ingredients/${item.id}/decrease`
                           );
 
-                          const updated = ingredients.map(ing =>
-
-                            ing.id === item.id
-                              ? {
-                                  ...ing,
-                                  editing: false
-                                }
-                              : ing
-
-                          );
-
-                          setIngredients(updated);
-
-                          alert('수정 완료');
+                          fetchIngredients();
 
                         }}
                         style={{
-                          width: '100%',
+                          flex: 1,
+                          padding: '8px',
+                          background: '#f39c12',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px'
+                        }}
+                      >
+                        사용
+                      </button>
+
+                      {/* 증가 */}
+
+                      <button
+                        onClick={async () => {
+
+                          await axios.patch(
+                            `${API_BASE_URL}/api/ingredients/${item.id}/increase`
+                          );
+
+                          fetchIngredients();
+
+                        }}
+                        style={{
+                          flex: 1,
                           padding: '8px',
                           background: '#27ae60',
                           color: 'white',
                           border: 'none',
-                          borderRadius: '4px',
-                          marginBottom: '5px'
+                          borderRadius: '4px'
                         }}
                       >
-                        저장
+                        추가
+                      </button>
+
+                      {/* 삭제 */}
+
+                      <button
+                        onClick={async () => {
+
+                          if (
+                            !window.confirm(
+                              '삭제하시겠습니까?'
+                            )
+                          ) {
+
+                            return;
+
+                          }
+
+                          await axios.delete(
+                            `${API_BASE_URL}/api/ingredients/${item.id}`
+                          );
+
+                          fetchIngredients();
+
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px',
+                          background: '#e74c3c',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px'
+                        }}
+                      >
+                        삭제
                       </button>
 
                     </div>
 
-                  )}
-
-                  {/* 버튼 */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '5px'
-                    }}
-                  >
-
-                    <button
-                      onClick={() => {
-
-                        const updated = ingredients.map(ing =>
-
-                          ing.id === item.id
-                            ? {
-                                ...ing,
-                                editing: !ing.editing
-                              }
-                            : ing
-
-                        );
-
-                        setIngredients(updated);
-
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        background: '#2980b9',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px'
-                      }}
-                    >
-                      수정
-                    </button>
-
-                    <button
-                      onClick={async () => {
-
-                        if (!window.confirm('삭제하시겠습니까?')) {
-                          return;
-                        }
-
-                        await axios.delete(
-                          `${API_BASE_URL}/api/ingredients/${item.id}`
-                        );
-
-                        fetchIngredients();
-
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        background: '#e74c3c',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px'
-                      }}
-                    >
-                      삭제
-                    </button>
-
                   </div>
 
-                </div>
+                ))}
 
-              ))}
+            </div>
 
-          </div>
-
-        ))}
+          ))}
 
       </section>
 
       {/* AI */}
-      <section style={{ marginBottom: '25px' }}>
 
-        <h3>🤖 AI 레시피 추천</h3>
+      <section
+        style={{
+          marginBottom: '25px'
+        }}
+      >
+
+        <h3>
+          🤖 AI 레시피 추천
+        </h3>
 
         <button
           onClick={getAiRecipe}
@@ -547,9 +606,12 @@ function App() {
       </section>
 
       {/* 쇼핑리스트 */}
+
       <section>
 
-        <h3>📝 쇼핑리스트</h3>
+        <h3>
+          📝 쇼핑리스트
+        </h3>
 
         <button
           onClick={getShoppingList}
@@ -573,13 +635,15 @@ function App() {
             }}
           >
 
-            {shoppingList.map((item, idx) => (
+            {shoppingList.map(
+              (item, idx) => (
 
-              <li key={idx}>
-                {item}
-              </li>
+                <li key={idx}>
+                  {item}
+                </li>
 
-            ))}
+              )
+            )}
 
           </ul>
 

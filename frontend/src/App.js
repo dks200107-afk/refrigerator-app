@@ -1,4 +1,5 @@
 // frontend/src/App.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -76,6 +77,7 @@ function App() {
     setName('');
     setExpiryDate('');
     setQuantity(1);
+    setUnit('개');
 
     fetchIngredients();
 
@@ -334,6 +336,12 @@ function App() {
                     }}
                   >
 
+                    위치:
+                    {' '}
+                    {item.category}
+
+                    <br />
+
                     수량:
                     {' '}
                     {item.quantity}
@@ -429,7 +437,7 @@ function App() {
 
                   </div>
 
-                  {/* 수정 모달 */}
+                  {/* 수정창 */}
 
                   {item.editing && (
 
@@ -620,6 +628,86 @@ function App() {
           </div>
 
         ))}
+
+      </section>
+
+      {/* AI 레시피 */}
+
+      <section style={{ marginBottom: '25px' }}>
+
+        <h3>🤖 AI 레시피 추천</h3>
+
+        <button
+          onClick={getAiRecipe}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: '#27ae60',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
+          레시피 추천 받기
+        </button>
+
+        {recipe && (
+
+          <div
+            style={{
+              marginTop: '10px',
+              padding: '15px',
+              background: '#f1f9f5',
+              borderRadius: '5px',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {recipe}
+          </div>
+
+        )}
+
+      </section>
+
+      {/* 쇼핑리스트 */}
+
+      <section>
+
+        <h3>📝 쇼핑리스트</h3>
+
+        <button
+          onClick={getShoppingList}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: '#2980b9',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
+          쇼핑리스트 생성
+        </button>
+
+        {shoppingList.length > 0 && (
+
+          <ul
+            style={{
+              marginTop: '10px'
+            }}
+          >
+
+            {shoppingList.map((item, idx) => (
+
+              <li key={idx}>
+                {item}
+              </li>
+
+            ))}
+
+          </ul>
+
+        )}
 
       </section>
 

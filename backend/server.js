@@ -115,14 +115,8 @@ app.post('/api/ingredients', (req, res) => {
     name,
     category,
     expiryDate,
-
-    quantity:
-      quantity !== undefined
-        ? quantity
-        : 1,
-
-    unit:
-      unit || '개'
+    quantity: quantity || 1,
+    unit: unit || '개'
   };
 
   refrigerator.push(newIngredient);
@@ -172,7 +166,7 @@ app.put('/api/ingredients/:id', (req, res) => {
     if (item.id === id) {
 
       return {
-        id: item.id,
+        ...item,
         name,
         category,
         expiryDate,
@@ -461,8 +455,13 @@ ${ingredientNames}
 
 조건:
 - 한글만 사용
-- 줄바꿈 깔끔하게
+- 초등학생도 이해할 정도로 쉽게 설명
+- 어려운 요리용어 사용 금지
 - 재료/조리법 구분
+- 조리 순서를 번호로 정리
+- 10분~20분 안에 만들 수 있는 요리 추천
+- 집에서 흔히 쓰는 조리도구만 사용
+- 친절한 말투 사용
 `
           }
         ],

@@ -156,16 +156,25 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
   '사과'
 ];
 
-    foodKeywords.forEach(food => {
-      if (text.includes(food)) {
-        possibleIngredients.push({
-          id: crypto.randomUUID(),
-          name: food,
-          category: '냉장',
-          expiryDate: '2026-12-31'
-        });
-      }
-    });
+const lines = text.split('\n');
+
+lines.forEach(line => {
+  foodKeywords.forEach(food => {
+    if (line.includes(food)) {
+      possibleIngredients.push({
+        id: crypto.randomUUID(),
+        name: food,
+        category: '냉장',
+        expiryDate: '2026-12-31'
+      });
+    }
+  });
+});
+const uniqueIngredients = [
+  ...new Map(
+    possibleIngredients.map(item => [item.name, item])
+  ).values()
+];
 
     if (possibleIngredients.length === 0) {
       return res.json({
@@ -174,11 +183,11 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       });
     }
 
-    refrigerator.push(...possibleIngredients);
+    refrigerator.push(...uniqueIngredients);
 
     res.json({
       message: 'OCR 등록 완료',
-      data: possibleIngredients,
+      data: uniqueIngredients,
       ocrText: text
     });
 

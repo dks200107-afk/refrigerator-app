@@ -4,6 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const crypto = require('crypto');
 const Groq = require('groq-sdk');
+const Tesseract = require('tesseract.js')
 
 require('dotenv').config();
 
@@ -107,26 +108,72 @@ app.delete('/api/ingredients/:id', (req, res) => {
 app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).send('파일이 없습니다.');
+      return res.status(400).json({ error: '파일이 없습니다.' });
     }
 
-    const mockExtractedIngredients = [
-      {
-        name: '두부',
-        category: '냉장',
-        expiryDate: '2026-05-30'
-      },
-      {
-        name: '대파',
-        category: '냉장',
-        expiryDate: '2026-05-22'
-      }
+    // OCR 실행
+    const result = await Tesseract.recognize(
+      req.file.path,
+      'kor+eng'
+    );
+
+    const text = result.data.text;
+
+    console.log("OCR 결과:", text);
+
+    // 식재료 후보 배열
+    const possibleIngredients = [];
+
+    // 인식할 식재료 키워드
+    const foodKeywords = [
+      '우유',
+      '계란',
+      '두부',
+      '대파',
+      '양파',
+      '김치',
+      '삼겹살',
+      '닭가슴살',
+      '콜라',
+      '치즈',
+      '햄',
+      '라면'
     ];
 
-    const processedIngredients = mockExtractedIngredients.map(item => ({
-      id: crypto.randomUUID(),
-      ...item
-    }));
+    // OCR 글자 안에 식재료 있는지 검사
+    foodKeywords.forEach(food => {
+      if (text.includes(food)) {
+        possibleIngredients.push({
+          id: crypto.randomUUID(),
+          name: food,
+          category: '냉장',
+          expiryDate: '2026-12-31'
+        });
+      }
+    });
+
+    // 식재료 못 찾은 경우
+    if (possibleIngredients.length === 0) {
+      return res.json({
+        message: '식재료를 찾지 못했습니다.',
+        ocrText: text
+      });
+    }
+
+    // 냉장고에 자동 등록
+    refrigerator.push(...possibleIngredients);
+
+    res.json({
+      message: 'OCR 등록 완료',
+      data: possibleIngredients,
+      ocrText: text
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'OCR 처리 실패' });
+  }
+});
 
     refrigerator.push(...processedIngredients);
 

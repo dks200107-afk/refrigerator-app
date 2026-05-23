@@ -115,8 +115,14 @@ app.post('/api/ingredients', (req, res) => {
     name,
     category,
     expiryDate,
-    quantity: quantity || 100,
-    unit: unit || '%'
+
+    quantity:
+      quantity !== undefined
+        ? quantity
+        : 1,
+
+    unit:
+      unit || '개'
   };
 
   refrigerator.push(newIngredient);
@@ -166,7 +172,7 @@ app.put('/api/ingredients/:id', (req, res) => {
     if (item.id === id) {
 
       return {
-        ...item,
+        id: item.id,
         name,
         category,
         expiryDate,

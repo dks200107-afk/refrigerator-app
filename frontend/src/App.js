@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_BASE_URL =
-  'https://refrigerator-app-jivi.onrender.com';
+  process.env.NODE_ENV === 'production'
+    ? 'https://refrigerator-app-jivi.onrender.com'
+    : 'http://localhost:5000';
 
 function App() {
 

@@ -102,9 +102,7 @@ app.delete('/api/ingredients/:id', (req, res) => {
 });
 
 
-// =======================================
-// 4. 영수증 OCR
-// =======================================
+// 3. 영수증 OCR
 app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
   try {
     if (!req.file) {
@@ -121,10 +119,8 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     console.log("OCR 결과:", text);
 
-    // 식재료 후보 배열
     const possibleIngredients = [];
 
-    // 인식할 식재료 키워드
     const foodKeywords = [
       '우유',
       '계란',
@@ -140,7 +136,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       '라면'
     ];
 
-    // OCR 글자 안에 식재료 있는지 검사
     foodKeywords.forEach(food => {
       if (text.includes(food)) {
         possibleIngredients.push({
@@ -152,7 +147,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       }
     });
 
-    // 식재료 못 찾은 경우
     if (possibleIngredients.length === 0) {
       return res.json({
         message: '식재료를 찾지 못했습니다.',
@@ -160,7 +154,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       });
     }
 
-    // 냉장고에 자동 등록
     refrigerator.push(...possibleIngredients);
 
     res.json({
@@ -172,20 +165,6 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'OCR 처리 실패' });
-  }
-});
-
-    refrigerator.push(...processedIngredients);
-
-    res.json({
-      message: '영수증 인식 및 등록 완료',
-      data: processedIngredients
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
   }
 });
 

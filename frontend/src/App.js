@@ -138,23 +138,27 @@ function App() {
   // 로그인
   // ======================
 
-  const handleGoogleLogin =
-    async () => {
+const handleGoogleLogin =
+  async () => {
 
-      try {
+    try {
 
-        await signInWithPopup(
-          auth,
-          provider
-        );
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
 
-      } catch (error) {
+      await signInWithPopup(
+        auth,
+        provider
+      );
 
-        console.error(error);
+    } catch (error) {
 
-      }
+      console.error(error);
 
-    };
+    }
+
+  };
 
   // ======================
   // 로그아웃

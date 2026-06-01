@@ -224,40 +224,97 @@ const handleGoogleLogin =
   // OCR
   // ======================
 
-  const handleOcrUpload =
-    async (e) => {
+const handleOcrUpload =
+  async (e) => {
 
-      const file =
-        e.target.files[0];
+    const file =
+      e.target.files[0];
 
-      if (!file) return;
+    if (!file) return;
 
-      const formData =
-        new FormData();
+    const formData =
+      new FormData();
 
-      formData.append(
-        'receipt',
-        file
-      );
+    formData.append(
+      'receipt',
+      file
+    );
 
-      alert('OCR 분석 시작');
+    alert('OCR 분석 시작');
 
-      try {
+    try {
 
+      const res =
         await axios.post(
           `${API_BASE_URL}/api/ocr`,
           formData
         );
 
-        fetchIngredients();
+      const ocrIngredients =
+        res.data.ingredients;
 
-      } catch (error) {
+      if (
+        !ocrIngredients ||
+        ocrIngredients.length === 0
+      ) {
 
-        console.error(error);
+        alert(
+          '식재료를 찾지 못했습니다.'
+        );
+
+        return;
 
       }
 
-    };
+      for (
+        const item
+        of ocrIngredients
+      ) {
+
+        await addDoc(
+          collection(
+            db,
+            'users',
+            user.uid,
+            'ingredients'
+          ),
+          {
+            name:
+              item.name,
+
+            category:
+              item.category || '냉장',
+
+            expiryDate:
+              item.expiryDate || '2026-12-31',
+
+            quantity:
+              item.quantity || 1,
+
+            unit:
+              item.unit || '개'
+          }
+        );
+
+      }
+
+      await fetchIngredients();
+
+      alert(
+        `${ocrIngredients.length}개 식재료 등록 완료`
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        'OCR 등록 실패'
+      );
+
+    }
+
+  };
 
   // ======================
   // AI 레시피

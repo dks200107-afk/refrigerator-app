@@ -248,17 +248,16 @@ app.post(
 
       }
 
-      res.json({
+res.json({
 
-        message:
-          'OCR 등록 완료',
+  success: true,
 
-        data:
-          uniqueIngredients,
+  ingredients:
+    uniqueIngredients,
 
-        ocrText: text
+  ocrText: text
 
-      });
+});
 
     } catch (error) {
 

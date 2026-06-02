@@ -62,11 +62,16 @@ function App() {
   const [shoppingList, setShoppingList] =
     useState([]);
 
-  const checkExpiryIngredients = () => {
+  const [expiryNotified, setExpiryNotified] =
+    useState(false);
+
+  const checkExpiryIngredients = (
+    items = ingredients
+  ) => {
 
     const today = new Date();
 
-    ingredients.forEach(item => {
+    items.forEach(item => {
 
       const expiryDate =
         new Date(item.expiryDate);
@@ -83,17 +88,17 @@ function App() {
       if (
         diffDays >= 0 &&
         diffDays <= 3
-    )   {
+      ) {
 
         alert(
           `${item.name} 유통기한이 ${diffDays}일 남았습니다.`
         );
 
-    }
+      }
 
-  });
+    });
 
-};
+  };
 
   // ======================
   // 로그인 유지
@@ -136,7 +141,7 @@ useEffect(() => {
   // ======================
 
   const fetchIngredients =
-    async () => {
+    async (notify = false) => {
 
       if (!user) return;
 
@@ -166,6 +171,11 @@ useEffect(() => {
 
         setIngredients(items);
 
+        if (notify && !expiryNotified) {
+          checkExpiryIngredients(items);
+          setExpiryNotified(true);
+        }
+
       } catch (error) {
 
         console.error(error);
@@ -178,28 +188,13 @@ useEffect(() => {
 
     if (user) {
 
-      fetchIngredients();
+      setExpiryNotified(false);
+      fetchIngredients(true);
 
     }
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  useEffect(() => {
-
-  if (
-    ingredients.length > 0
-  ) {
-
-    checkExpiryIngredients();
-
-  }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [ingredients]);
-
-  // ======================
-  // 로그인
-  // ======================
 
 const handleGoogleLogin =
   async () => {

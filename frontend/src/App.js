@@ -59,6 +59,9 @@ function App() {
   const [recipe, setRecipe] =
     useState('');
 
+  const [additionalIngredients, setAdditionalIngredients] =
+    useState('');
+
   const [shoppingList, setShoppingList] =
     useState([]);
 
@@ -401,7 +404,7 @@ const handleOcrUpload =
 
 const today = new Date();
 
-const ingredientNames =
+let ingredientNames =
   sortedIngredients
     .map(item => {
 
@@ -422,6 +425,23 @@ ${item.name}
 
     })
     .join(', ');
+
+const extraText = additionalIngredients
+  .trim();
+
+if (extraText) {
+  ingredientNames =
+    ingredientNames
+      ? `${ingredientNames}, ${extraText}`
+      : extraText;
+}
+
+if (!ingredientNames) {
+  setRecipe(
+    '재료를 추가하거나 원하는 재료를 입력해주세요.'
+  );
+  return;
+}
 
         const res =
           await axios.get(
@@ -1043,6 +1063,29 @@ ${item.name}
           marginTop: '30px'
         }}
       >
+
+        <div
+          style={{
+            marginBottom: '18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}
+        >
+          <label>
+            추가로 원하는 재료
+          </label>
+          <input
+            type="text"
+            placeholder="예: 감자, 양파, 버터"
+            value={additionalIngredients}
+            onChange={(e) =>
+              setAdditionalIngredients(
+                e.target.value
+              )
+            }
+          />
+        </div>
 
         <button
           onClick={getAiRecipe}

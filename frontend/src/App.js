@@ -60,6 +60,39 @@ function App() {
   const [shoppingList, setShoppingList] =
     useState([]);
 
+  const checkExpiryIngredients = () => {
+
+    const today = new Date();
+
+    ingredients.forEach(item => {
+
+      const expiryDate =
+        new Date(item.expiryDate);
+
+      const diffTime =
+        expiryDate - today;
+
+      const diffDays =
+        Math.ceil(
+          diffTime /
+          (1000 * 60 * 60 * 24)
+        );
+
+      if (
+        diffDays >= 0 &&
+        diffDays <= 3
+    )   {
+
+        alert(
+          `${item.name} 유통기한이 ${diffDays}일 남았습니다.`
+        );
+
+    }
+
+  });
+
+};
+
   // ======================
   // 로그인 유지
   // ======================
@@ -79,6 +112,19 @@ function App() {
     return () => unsubscribe();
 
   }, []);
+
+  useEffect(() => {
+
+  if (
+    Notification.permission !==
+    'granted'
+  ) {
+
+    Notification.requestPermission();
+
+  }
+
+}, []);
 
   // ======================
   // 재료 조회
@@ -133,6 +179,18 @@ function App() {
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  useEffect(() => {
+
+  if (
+    ingredients.length > 0
+  ) {
+
+    checkExpiryIngredients();
+
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [ingredients]);
 
   // ======================
   // 로그인

@@ -402,16 +402,30 @@ const handleOcrUpload =
 
     });
 
+const today = new Date();
+
 const ingredientNames =
   sortedIngredients
-    .map(item =>
+    .map(item => {
 
-      `${item.name}
-(유통기한:${item.expiryDate})`
+      const diffDays =
+        Math.ceil(
+          (
+            new Date(item.expiryDate)
+            - today
+          )
+          /
+          (1000 * 60 * 60 * 24)
+        );
 
-    )
+      return `
+${item.name}
+(남은기간:${diffDays}일)
+`;
+
+    })
     .join(', ');
-
+    
         const res =
           await axios.get(
             `${API_BASE_URL}/api/ai-recipe`,

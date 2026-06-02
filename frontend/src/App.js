@@ -7,6 +7,8 @@ import React, {
 
 import axios from 'axios';
 
+import './App.css';
+
 import {
   auth,
   provider,
@@ -425,7 +427,7 @@ ${item.name}
 
     })
     .join(', ');
-    
+
         const res =
           await axios.get(
             `${API_BASE_URL}/api/ai-recipe`,
@@ -504,29 +506,18 @@ ${item.name}
 
     return (
 
-      <div
-        style={{
-          padding: '40px',
-          textAlign: 'center'
-        }}
-      >
+      <div className="app-wrapper centered-screen">
 
         <h1>
           냉장고 관리 프로그램 🧊
         </h1>
 
         <button
+          className="primary-button"
           onClick={
             handleGoogleLogin
           }
-          style={{
-            padding: '12px 20px',
-            border: 'none',
-            borderRadius: '8px',
-            background: '#4285F4',
-            color: 'white',
-            cursor: 'pointer'
-          }}
+          type="button"
         >
           Google 로그인
         </button>
@@ -539,14 +530,7 @@ ${item.name}
 
   return (
 
-    <div
-      style={{
-        padding: '20px',
-        maxWidth: '700px',
-        margin: '0 auto',
-        fontFamily: 'sans-serif'
-      }}
-    >
+    <div className="app-wrapper">
 
       <h1>
         냉장고 관리 프로그램 🧊
@@ -576,11 +560,7 @@ ${item.name}
 
       {/* OCR */}
 
-      <section
-        style={{
-          marginBottom: '30px'
-        }}
-      >
+      <section className="section-card">
 
         <h3>
           🧾 영수증 OCR 등록
@@ -599,11 +579,7 @@ ${item.name}
 
       {/* 직접 입력 */}
 
-      <section
-        style={{
-          marginBottom: '30px'
-        }}
-      >
+      <section className="section-card">
 
         <h3>
           ✏️ 식재료 직접 입력
@@ -613,11 +589,7 @@ ${item.name}
           onSubmit={
             handleSubmit
           }
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}
+          className="form-stack"
         >
 
           <input
@@ -706,7 +678,7 @@ ${item.name}
 
       {/* 재고 현황 */}
 
-      <section>
+      <section className="section-card">
 
         <h3>
           🛒 냉장고 재고 현황
@@ -735,12 +707,7 @@ ${item.name}
 
               <div
                 key={item.id}
-                style={{
-                  background: '#f4f4f4',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  marginBottom: '10px'
-                }}
+                className="item-card"
               >
 
                 <strong>
@@ -762,13 +729,7 @@ ${item.name}
 
                 {/* 버튼 */}
 
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '10px',
-                    marginTop: '10px'
-                  }}
-                >
+                <div className="button-group">
 
                   {/* 수정 */}
 
@@ -843,17 +804,7 @@ ${item.name}
 
                 {item.editing && (
 
-                  <div
-                    style={{
-                      marginTop: '15px',
-                      padding: '10px',
-                      background: '#fff',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '10px'
-                    }}
-                  >
+<div className="edit-panel">
 
                     <input
                       type="text"

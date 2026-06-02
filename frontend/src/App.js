@@ -390,10 +390,27 @@ const handleOcrUpload =
 
       try {
 
-        const ingredientNames =
-          ingredients
-            .map(item => item.name)
-            .join(', ');
+        const sortedIngredients =
+  [...ingredients]
+    .sort((a, b) => {
+
+      return (
+        new Date(a.expiryDate)
+        -
+        new Date(b.expiryDate)
+      );
+
+    });
+
+const ingredientNames =
+  sortedIngredients
+    .map(item =>
+
+      `${item.name}
+(유통기한:${item.expiryDate})`
+
+    )
+    .join(', ');
 
         const res =
           await axios.get(

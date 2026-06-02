@@ -73,11 +73,14 @@
 .form-stack select,
 .app-wrapper input,
 .app-wrapper select,
-.app-wrapper button,
 .app-wrapper pre,
 .app-wrapper ul {
   width: 100%;
   box-sizing: border-box;
+}
+
+.app-wrapper button {
+  width: auto;
 }
 
 .app-wrapper input,

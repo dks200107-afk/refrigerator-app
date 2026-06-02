@@ -113,14 +113,17 @@ function App() {
 
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
 
-  if (
-    Notification.permission !==
-    'granted'
-  ) {
+  if ('Notification' in window) {
 
-    Notification.requestPermission();
+    if (
+      Notification.permission !== 'granted'
+    ) {
+
+      Notification.requestPermission();
+
+    }
 
   }
 
@@ -309,7 +312,7 @@ const handleOcrUpload =
         );
 
       const ocrIngredients =
-        res.data.ingredients;
+        res.data.data;
 
       if (
         !ocrIngredients ||

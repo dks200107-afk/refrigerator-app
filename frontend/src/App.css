@@ -155,6 +155,25 @@ button:disabled {
   background: #e2e8f0;
 }
 
+.edit-button {
+  color: #1f2937;
+  background: #f8fafc;
+  border: 1px solid #93c5fd;
+}
+
+.edit-button:hover {
+  background: #dbeafe;
+}
+
+.delete-button {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+}
+
 .button-group {
   display: flex;
   flex-wrap: wrap;

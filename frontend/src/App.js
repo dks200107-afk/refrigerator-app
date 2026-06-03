@@ -725,6 +725,7 @@ if (!ingredientNames) {
                   {/* 수정 */}
 
                   <button
+                    className="button-secondary edit-button"
                     onClick={() => {
 
                       const updated =
@@ -760,6 +761,7 @@ if (!ingredientNames) {
                   {/* 삭제 */}
 
                   <button
+                    className="delete-button"
                     onClick={async () => {
 
                       if (

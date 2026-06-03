@@ -334,6 +334,21 @@ pre {
     padding: 14px;
   }
 
+  .ocr-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .ocr-actions button {
+    flex: 1;
+    padding: 10px 12px;
+    height: 44px;
+    font-size: 0.88rem;
+    border-radius: 12px;
+    line-height: 1.3;
+  }
+
   .item-card {
     padding: 10px;
     gap: 0;
@@ -354,10 +369,11 @@ pre {
 
   .item-card strong {
     margin-bottom: 8px;
+    font-size: 1rem;
   }
 
   .item-actions {
-    gap: 4px;
+    gap: 6px;
     grid-column: 2;
     grid-row: 1 / 3;
     flex-direction: column;
@@ -365,16 +381,15 @@ pre {
     justify-content: flex-start;
   }
 
-  .item-actions button,
-  .ocr-actions button {
-    padding: 6px 12px;
+  .item-actions button {
+    padding: 8px 10px;
     height: auto;
-    min-height: 50px;
-    line-height: 1.2;
+    min-height: 44px;
+    line-height: 1.3;
     font-size: 0.85rem;
-    border-radius: 10px;
+    border-radius: 12px;
     min-width: 0;
-    width: 80px;
+    width: 70px;
   }
 
   .item-meta {
@@ -387,7 +402,7 @@ pre {
 
   .item-meta div {
     padding: 4px 8px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   .section-actions {

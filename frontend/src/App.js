@@ -57,9 +57,6 @@ function App() {
   const [unit, setUnit] =
     useState('개');
 
-  const cameraInputRef =
-    useRef(null);
-
   const galleryInputRef =
     useRef(null);
 
@@ -581,27 +578,11 @@ if (!ingredientNames) {
           <button
             type="button"
             className="button-secondary"
-            onClick={() => cameraInputRef.current?.click()}
-          >
-            카메라로 찍기
-          </button>
-          <button
-            type="button"
-            className="button-secondary"
             onClick={() => galleryInputRef.current?.click()}
           >
-            갤러리에서 선택
+            영수증 등록
           </button>
         </div>
-
-        <input
-          ref={cameraInputRef}
-          className="ocr-input-hidden"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleOcrUpload}
-        />
 
         <input
           ref={galleryInputRef}

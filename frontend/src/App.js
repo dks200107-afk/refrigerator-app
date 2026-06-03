@@ -726,7 +726,9 @@ if (!ingredientNames) {
                   <strong>
                     {item.name}
                   </strong>
-                  <div className="item-actions button-group">
+                </div>
+
+                <div className="item-actions button-group">
 
                   {/* 수정 */}
 
@@ -798,8 +800,6 @@ if (!ingredientNames) {
                       삭제
                     </button>
                   )}
-
-                </div>
 
                 </div>
 

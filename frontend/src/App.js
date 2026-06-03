@@ -722,18 +722,11 @@ if (!ingredientNames) {
                 className="item-card"
               >
 
-                <strong>
-                  {item.name}
-                </strong>
-
-                <div className="item-meta">
-                  <div>수량: {item.quantity}{item.unit}</div>
-                  <div>유통기한: {item.expiryDate}</div>
-                </div>
-
-                {/* 버튼 */}
-
-                <div className="item-actions button-group">
+                <div className="item-header">
+                  <strong>
+                    {item.name}
+                  </strong>
+                  <div className="item-actions button-group">
 
                   {/* 수정 */}
 
@@ -806,6 +799,11 @@ if (!ingredientNames) {
                     </button>
                   )}
 
+                </div>
+
+                <div className="item-meta">
+                  <div>수량: {item.quantity}{item.unit}</div>
+                  <div>유통기한: {item.expiryDate}</div>
                 </div>
 
                 {/* 수정 모달 */}

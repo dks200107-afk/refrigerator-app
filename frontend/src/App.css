@@ -207,6 +207,13 @@ button:disabled {
   gap: 6px;
 }
 
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
 .item-card strong {
   margin: 0;
   font-size: 1.03rem;
@@ -238,7 +245,6 @@ button:disabled {
   justify-content: flex-end;
   align-items: center;
   margin: 0;
-  align-self: flex-end;
 }
 
 .item-actions button {

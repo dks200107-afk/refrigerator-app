@@ -362,21 +362,22 @@ pre {
   .item-header {
     gap: 8px;
     grid-column: 1;
-    grid-row: 1 / 3;
+    grid-row: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .item-card strong {
-    margin-bottom: 8px;
+    margin-bottom: 0;
     font-size: 1rem;
   }
 
   .item-actions {
     gap: 6px;
     grid-column: 2;
-    grid-row: 2;
+    grid-row: 1;
     flex-direction: row;
     align-items: center;
     justify-self: end;
@@ -396,7 +397,7 @@ pre {
     gap: 4px;
     margin-top: 0px;
     align-items: flex-start;
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-row: 2;
   }
 

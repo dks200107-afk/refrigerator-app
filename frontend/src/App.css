@@ -223,6 +223,13 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.item-card {
+  display: flex;
+  flex-direction: column;
 }
 
 .category-block {

@@ -801,6 +801,8 @@ if (!ingredientNames) {
 
                 </div>
 
+                </div>
+
                 <div className="item-meta">
                   <div>수량: {item.quantity}{item.unit}</div>
                   <div>유통기한: {item.expiryDate}</div>

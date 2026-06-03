@@ -217,13 +217,23 @@ button:disabled {
 
 .item-meta {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
   margin: 4px 0 0;
   color: #475569;
   grid-row: 2;
   grid-column: 1;
   font-size: 0.95rem;
+}
+
+.item-meta div {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .item-actions {

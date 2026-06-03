@@ -773,36 +773,38 @@ if (!ingredientNames) {
 
                   {/* 삭제 */}
 
-                  <button
-                    className="delete-button"
-                    onClick={async () => {
+                  {item.editing && (
+                    <button
+                      className="delete-button"
+                      onClick={async () => {
 
-                      if (
-                        !window.confirm(
-                          '삭제하시겠습니까?'
-                        )
-                      ) {
+                        if (
+                          !window.confirm(
+                            '삭제하시겠습니까?'
+                          )
+                        ) {
 
-                        return;
+                          return;
 
-                      }
+                        }
 
-                      await deleteDoc(
-                        doc(
-                          db,
-                          'users',
-                          user.uid,
-                          'ingredients',
-                          item.id
-                        )
-                      );
+                        await deleteDoc(
+                          doc(
+                            db,
+                            'users',
+                            user.uid,
+                            'ingredients',
+                            item.id
+                          )
+                        );
 
-                      fetchIngredients();
+                        fetchIngredients();
 
-                    }}
-                  >
-                    삭제
-                  </button>
+                      }}
+                    >
+                      삭제
+                    </button>
+                  )}
 
                 </div>
 

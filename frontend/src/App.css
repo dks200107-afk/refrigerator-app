@@ -385,12 +385,12 @@ pre {
   }
 
   .item-actions button {
-    padding: 6px 16px;
+    padding: 6px 18px;
     height: 32px;
     line-height: 1;
     font-size: 0.86rem;
     border-radius: 12px;
-    min-width: 90px;
+    min-width: 110px;
     width: auto;
     display: inline-flex;
     justify-content: center;

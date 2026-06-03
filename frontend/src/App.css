@@ -247,7 +247,14 @@ button:disabled {
   margin: 0;
 }
 
-.item-actions button {
+.item-delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.item-actions button,
+.item-delete button {
   width: 40px;
   height: 40px;
   padding: 0;
@@ -384,7 +391,16 @@ pre {
     width: 100%;
   }
 
-  .item-actions button {
+  .item-delete {
+    grid-column: 1;
+    width: 100%;
+    justify-content: flex-end;
+    display: flex;
+    margin-top: 0;
+  }
+
+  .item-actions button,
+  .item-delete button {
     padding: 6px 18px;
     height: 32px;
     line-height: 1;

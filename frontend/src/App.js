@@ -728,7 +728,7 @@ if (!ingredientNames) {
                   </strong>
                 </div>
 
-                <div className="item-actions button-group">
+                <div className="item-actions">
 
                   {/* 수정 */}
 
@@ -766,9 +766,10 @@ if (!ingredientNames) {
                     수정
                   </button>
 
-                  {/* 삭제 */}
+                </div>
 
-                  {item.editing && (
+                {item.editing && (
+                  <div className="item-delete">
                     <button
                       className="delete-button"
                       onClick={async () => {
@@ -799,9 +800,8 @@ if (!ingredientNames) {
                     >
                       삭제
                     </button>
-                  )}
-
-                </div>
+                  </div>
+                )}
 
                 <div className="item-meta">
                   <div>수량: {item.quantity}{item.unit}</div>

@@ -2,7 +2,8 @@
 
 import React, {
   useState,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 
 import axios from 'axios';
@@ -55,6 +56,12 @@ function App() {
 
   const [unit, setUnit] =
     useState('개');
+
+  const cameraInputRef =
+    useRef(null);
+
+  const galleryInputRef =
+    useRef(null);
 
   const [recipe, setRecipe] =
     useState('');
@@ -570,13 +577,38 @@ if (!ingredientNames) {
           🧾 영수증 OCR 등록
         </h3>
 
+        <div className="ocr-actions button-group">
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => cameraInputRef.current?.click()}
+          >
+            카메라로 찍기
+          </button>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => galleryInputRef.current?.click()}
+          >
+            갤러리에서 선택
+          </button>
+        </div>
+
         <input
+          ref={cameraInputRef}
+          className="ocr-input-hidden"
           type="file"
           accept="image/*"
           capture="environment"
-          onChange={
-            handleOcrUpload
-          }
+          onChange={handleOcrUpload}
+        />
+
+        <input
+          ref={galleryInputRef}
+          className="ocr-input-hidden"
+          type="file"
+          accept="image/*"
+          onChange={handleOcrUpload}
         />
 
       </section>

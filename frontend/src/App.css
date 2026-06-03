@@ -145,6 +145,17 @@ button:disabled {
   max-width: 260px;
 }
 
+.ocr-input-hidden {
+  display: none;
+}
+
+.ocr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
 .button-secondary {
   background: #f8fafc;
   color: #1f2937;

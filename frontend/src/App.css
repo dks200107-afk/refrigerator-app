@@ -198,14 +198,14 @@ button:disabled {
 
 .item-card {
   background: #f8fbff;
-  padding: 18px;
+  padding: 16px;
   border-radius: 20px;
   margin-bottom: 14px;
   border: 1px solid rgba(37, 99, 235, 0.12);
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
-  gap: 10px;
+  gap: 8px;
   align-items: start;
 }
 
@@ -217,17 +217,17 @@ button:disabled {
 
 .item-meta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, auto));
+  gap: 8px;
   margin: 0;
   color: #475569;
-  grid-column: 1 / -1;
+  grid-column: 1;
 }
 
 .item-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
   align-items: center;
   margin: 0;
@@ -236,10 +236,15 @@ button:disabled {
 }
 
 .item-actions button {
-  padding: 8px 12px;
-  font-size: 0.92rem;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 0.88rem;
   border-radius: 12px;
   min-width: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .category-block {

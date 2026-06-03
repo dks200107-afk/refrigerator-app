@@ -375,7 +375,7 @@ pre {
   }
 
   .item-actions {
-    gap: 6px;
+    gap: 8px;
     grid-column: 1;
     grid-row: 3;
     flex-direction: row;
@@ -385,13 +385,16 @@ pre {
   }
 
   .item-actions button {
-    padding: 4px 10px;
-    height: 28px;
+    padding: 6px 14px;
+    height: 32px;
     line-height: 1;
-    font-size: 0.84rem;
+    font-size: 0.86rem;
     border-radius: 12px;
-    min-width: 0;
+    min-width: 70px;
     width: auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .item-meta {

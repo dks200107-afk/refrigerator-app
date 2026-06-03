@@ -316,15 +316,16 @@ pre {
   }
 
   .app-wrapper {
-    padding: 16px;
+    padding: 14px;
   }
 
   .section-card {
-    padding: 20px;
+    padding: 16px;
   }
 
   .item-card {
-    padding: 16px;
+    padding: 12px;
+    gap: 4px 8px;
   }
 
   .section-actions {
@@ -337,27 +338,27 @@ pre {
   }
 
   .item-actions {
-    gap: 6px;
+    gap: 4px;
   }
 
   .item-actions button,
   .ocr-actions button {
-    padding: 8px 12px;
-    height: 34px;
+    padding: 6px 10px;
+    height: 32px;
     line-height: 1;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     border-radius: 12px;
     min-width: 0;
     width: auto;
   }
 
   .item-actions button {
-    max-width: 120px;
+    max-width: 110px;
   }
 
   .item-meta {
-    gap: 6px;
-    margin-top: 4px;
+    gap: 4px;
+    margin-top: 2px;
     align-items: flex-start;
   }
 

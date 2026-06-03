@@ -553,24 +553,13 @@ if (!ingredientNames) {
 
       {/* 로그인 */}
 
-      <div
-        style={{
-          marginBottom: '20px'
-        }}
-      >
-
-        <div>
-          로그인:
-          {' '}
-          {user.email}
+      <div className="user-panel">
+        <div className="user-info">
+          로그인: {user.email}
         </div>
-
-        <button
-          onClick={handleLogout}
-        >
+        <button className="button-secondary" onClick={handleLogout}>
           로그아웃
         </button>
-
       </div>
 
       {/* OCR */}
@@ -702,12 +691,7 @@ if (!ingredientNames) {
         {['냉장', '냉동', '실온']
           .map(cat => (
 
-          <div
-            key={cat}
-            style={{
-              marginBottom: '20px'
-            }}
-          >
+          <div key={cat} className="category-block">
 
             <h4>
               {cat}
@@ -729,22 +713,14 @@ if (!ingredientNames) {
                   {item.name}
                 </strong>
 
-                <div>
-                  수량:
-                  {' '}
-                  {item.quantity}
-                  {item.unit}
-                </div>
-
-                <div>
-                  유통기한:
-                  {' '}
-                  {item.expiryDate}
+                <div className="item-meta">
+                  <div>수량: {item.quantity}{item.unit}</div>
+                  <div>유통기한: {item.expiryDate}</div>
                 </div>
 
                 {/* 버튼 */}
 
-                <div className="button-group">
+                <div className="item-actions button-group">
 
                   {/* 수정 */}
 
@@ -1058,74 +1034,50 @@ if (!ingredientNames) {
 
       {/* AI 레시피 */}
 
-      <section
-        style={{
-          marginTop: '30px'
-        }}
-      >
+      <section className="section-card ai-section">
+        <div className="section-header">
+          <h3>🤖 AI 레시피 추천</h3>
+          <p className="section-description">현재 냉장고 재료와 추가 재료를 바탕으로 AI가 레시피를 추천해줍니다.</p>
+        </div>
 
-        <div
-          style={{
-            marginBottom: '18px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}
-        >
-          <label>
-            추가로 원하는 재료
-          </label>
+        <div className="form-stack">
+          <label className="field-label">추가로 원하는 재료</label>
           <input
             type="text"
             placeholder="예: 감자, 양파, 버터"
             value={additionalIngredients}
-            onChange={(e) =>
-              setAdditionalIngredients(
-                e.target.value
-              )
-            }
+            onChange={(e) => setAdditionalIngredients(e.target.value)}
           />
         </div>
 
-        <button
-          onClick={getAiRecipe}
-        >
-          AI 레시피 추천
-        </button>
+        <div className="section-actions">
+          <button className="primary-button" onClick={getAiRecipe}>
+            AI 레시피 추천
+          </button>
+        </div>
 
-        <pre>
-          {recipe}
-        </pre>
-
+        <pre className="recipe-output">{recipe}</pre>
       </section>
 
       {/* 쇼핑리스트 */}
 
-      <section
-        style={{
-          marginTop: '30px'
-        }}
-      >
+      <section className="section-card shopping-section">
+        <div className="section-header">
+          <h3>🛍️ 쇼핑리스트</h3>
+          <p className="section-description">남은 수량을 분석하여 구매가 필요한 재료를 알려줍니다.</p>
+        </div>
 
-        <button
-          onClick={getShoppingList}
-        >
-          쇼핑리스트 보기
-        </button>
+        <div className="section-actions">
+          <button className="primary-button" onClick={getShoppingList}>
+            쇼핑리스트 보기
+          </button>
+        </div>
 
-        <ul>
-
-          {shoppingList.map(
-            (item, idx) => (
-
-            <li key={idx}>
-              {item}
-            </li>
-
+        <ul className="shopping-list">
+          {shoppingList.map((item, idx) => (
+            <li key={idx}>{item}</li>
           ))}
-
         </ul>
-
       </section>
 
     </div>

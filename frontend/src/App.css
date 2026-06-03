@@ -1,48 +1,29 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #1055e0;
+body {
+  margin: 0;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: rgba(255, 255, 255, 0.96);
+  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+  color: #0f172a;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .app-wrapper {
-  padding: 20px;
-  max-width: 760px;
+  padding: 24px 20px 40px;
+  max-width: 1040px;
   margin: 0 auto;
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #1f2937;
+}
+
+h1 {
+  margin: 0 0 26px;
+  font-size: 2.6rem;
+  line-height: 1.05;
+  color: #1d4ed8;
+  text-align: center;
 }
 
 .centered-screen {
@@ -55,18 +36,60 @@
   padding: 40px 20px;
 }
 
-.section-card {
-  margin-bottom: 30px;
-  padding: 22px;
+.user-panel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
   background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(16, 85, 224, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+.user-info {
+  color: #334155;
+  font-size: 1rem;
+}
+
+.section-card {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+}
+
+.section-card h3 {
+  margin: 0 0 10px;
+  color: #1e40af;
+  font-size: 1.15rem;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-description {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .form-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+}
+
+.field-label {
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .form-stack input,
@@ -79,41 +102,57 @@
   box-sizing: border-box;
 }
 
-.app-wrapper button {
-  width: auto;
-}
-
 .app-wrapper input,
 .app-wrapper select {
-  padding: 12px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
   background: #f8fafc;
   font-size: 1rem;
+  color: #0f172a;
+}
+
+.app-wrapper input:focus,
+.app-wrapper select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
 }
 
 button {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border: none;
-  border-radius: 14px;
-  background: #1055e0;
+  border-radius: 16px;
+  background: #2563eb;
   color: #ffffff;
   cursor: pointer;
   font-size: 1rem;
-  transition: background 0.2s ease;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
 button:hover {
-  background: #0f4acc;
+  background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  opacity: 0.7;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
 .primary-button {
   width: 100%;
+  max-width: 260px;
+}
+
+.button-secondary {
+  background: #f8fafc;
+  color: #1f2937;
+  border: 1px solid #cbd5e1;
+}
+
+.button-secondary:hover {
+  background: #e2e8f0;
 }
 
 .button-group {
@@ -128,63 +167,127 @@ button:disabled {
 }
 
 .item-card {
-  background: #f4f7fb;
-  padding: 14px;
-  border-radius: 16px;
-  margin-bottom: 12px;
+  background: #f8fbff;
+  padding: 18px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
 }
 
 .item-card strong {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 1.05rem;
+  color: #1e293b;
+}
+
+.item-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+  color: #475569;
+}
+
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.category-block {
+  margin-bottom: 22px;
+}
+
+.category-block h4 {
+  margin-bottom: 12px;
+  color: #334155;
 }
 
 .edit-panel {
-  margin-top: 15px;
-  padding: 14px;
+  margin-top: 18px;
+  padding: 18px;
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 pre {
   white-space: pre-wrap;
   word-break: break-word;
   background: #f8fafc;
-  padding: 14px;
-  border-radius: 14px;
+  padding: 18px;
+  border-radius: 18px;
   border: 1px solid #e2e8f0;
+  color: #0f172a;
 }
 
-ul {
-  padding-left: 1.2rem;
+.recipe-output {
+  margin-top: 18px;
+  min-height: 120px;
+}
+
+.section-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.shopping-list {
+  list-style: disc inside;
+  margin: 16px 0 0;
+  padding: 0;
+  color: #334155;
+}
+
+.shopping-list li {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+  .app-wrapper {
+    padding: 20px;
+  }
+
+  .item-meta {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
+  h1 {
+    font-size: 2rem;
+  }
+
   .app-wrapper {
     padding: 16px;
+  }
+
+  .section-card {
+    padding: 20px;
+  }
+
+  .item-card {
+    padding: 16px;
+  }
+
+  .section-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .button-group {
     flex-direction: column;
   }
 
-  .item-card {
-    padding: 12px;
+  .user-panel {
+    align-items: flex-start;
   }
 
-  .section-card {
-    padding: 18px;
-  }
-
-  .app-wrapper h1 {
-    font-size: 1.8rem;
-  }
-
-  .app-wrapper h3 {
-    font-size: 1.1rem;
+  .recipe-output {
+    min-height: 100px;
   }
 }

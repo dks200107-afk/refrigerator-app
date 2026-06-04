@@ -183,6 +183,23 @@ const isLikelyReceiptItemLine = (line) => {
   return true;
 };
 
+const extractProductName = (line) => {
+  const cleaned = line.replace(/\s{2,}/g, ' ').trim();
+  const tokens = cleaned.split(/\s+/);
+  
+  const productTokens = [];
+  
+  for (const token of tokens) {
+    if (/[가-힣A-Za-z]/.test(token)) {
+      productTokens.push(token);
+    } else if (productTokens.length > 0) {
+      break;
+    }
+  }
+  
+  return productTokens.join(' ');
+};
+
 const heuristicExtractItems = (text) => {
   const lines = text
     .split('\n')
@@ -194,15 +211,10 @@ const heuristicExtractItems = (text) => {
   for (const line of lines) {
     if (!isLikelyReceiptItemLine(line)) continue;
 
-    const cleaned = line.replace(/\s{2,}/g, ' ').trim();
-    const tokens = cleaned.split(/\s+/);
-    while (tokens.length > 0 && isReceiptNumericToken(tokens[tokens.length - 1])) {
-      tokens.pop();
-    }
-    const priceRemoved = tokens.join(' ').trim();
+    const productName = extractProductName(line);
 
-    if (priceRemoved.length > 1 && /[가-힣A-Za-z]/.test(priceRemoved)) {
-      candidates.push(normalizeProductName(priceRemoved));
+    if (productName.length > 1 && /[가-힣A-Za-z]/.test(productName)) {
+      candidates.push(normalizeProductName(productName));
     }
   }
 

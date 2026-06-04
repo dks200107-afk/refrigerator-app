@@ -72,6 +72,52 @@ const chooseBestOcrText = (texts) => {
   return scored[0]?.text || '';
 };
 
+const cleanReceiptLine = (line) => {
+  return line
+    .replace(/[^가-힣A-Za-z0-9\s\.\,\-\:\(\)\/\+\%]/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+};
+
+const scoreReceiptLine = (line) => {
+  const cleaned = cleanReceiptLine(line);
+  const koreanCount = (cleaned.match(/[가-힣]/g) || []).length;
+  const alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
+  const digitCount = (cleaned.match(/[0-9]/g) || []).length;
+  const punctuationCount = (cleaned.match(/[\.\,\-\:\(\)\/\+\%]/g) || []).length;
+  const totalChars = cleaned.length || 1;
+  const badRatio = 1 - (koreanCount + alphaCount + digitCount) / totalChars;
+  return koreanCount * 5 + alphaCount * 3 + digitCount * 1 - punctuationCount * 2 - badRatio * 10;
+};
+
+const mergeOcrTexts = (texts) => {
+  const linesMap = new Map();
+
+  for (const text of texts) {
+    if (!text) continue;
+    for (let rawLine of text.split(/\r?\n/)) {
+      const line = cleanReceiptLine(rawLine);
+      if (!line) continue;
+      const score = scoreReceiptLine(line);
+      const existing = linesMap.get(line);
+      if (existing) {
+        existing.count += 1;
+        existing.score = Math.max(existing.score, score);
+      } else {
+        linesMap.set(line, {
+          line,
+          count: 1,
+          score
+        });
+      }
+    }
+  }
+
+  return [...linesMap.values()]
+    .sort((a, b) => b.count - a.count || b.score - a.score)
+    .map(entry => entry.line);
+};
+
 const normalizeProductName = (name) => {
   let normalized = name.replace(/\s+/g, ' ').trim();
   normalized = normalized.replace(/\s*([0-9]+)\s*(g|G)?$/i, '$1G');
@@ -110,7 +156,7 @@ const isReceiptNumericToken = (token) => {
 };
 
 const isLikelyReceiptItemLine = (line) => {
-  const cleaned = line.replace(/[^가-힣A-Za-z0-9\s\.\,\-\:\(\)\/\+\%]/g, ' ').trim();
+  const cleaned = cleanReceiptLine(line);
   if (!cleaned || cleaned.length < 3) return false;
   if (/^(합계|총액|현금|카드|잔액|포인트|쿠폰|할인|부가세|세액|매장|계산서)/i.test(cleaned)) return false;
   if (/^[0-9\s\.,]+$/.test(cleaned)) return false;
@@ -123,12 +169,16 @@ const isLikelyReceiptItemLine = (line) => {
   const alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
   const koreanCount = (cleaned.match(/[가-힣]/g) || []).length;
   if (koreanCount + alphaCount < 2) return false;
+  if (koreanCount < 2 && alphaCount < 2) return false;
 
   const punctuationCount = (cleaned.match(/[\.\,\-\:\(\)\/\+\%]/g) || []).length;
-  if (punctuationCount > cleaned.length * 0.25) return false;
+  if (punctuationCount > cleaned.length * 0.2) return false;
 
   if (/\b(LV|Lv|lv|ML|ml)\b/.test(cleaned)) return false;
   if (/\b(할\.|할)\b/.test(cleaned) && !/\b(할인)\b/.test(cleaned)) return false;
+  if (/\b(명|가|해)\b/.test(cleaned) && cleaned.split(/\s+/).length < 3) return false;
+
+  if (!/[가-힣]/.test(cleaned) && /^[0-9A-Za-z\s\.\,\-\:\(\)\/\+\%]+$/.test(cleaned)) return false;
 
   return true;
 };
@@ -239,7 +289,8 @@ const recognizeTextWithTesseract = async (buffer) => {
         tessedit_ocr_engine_mode: 3,
         tessedit_pageseg_mode: psm,
         preserve_interword_spaces: '1',
-        user_defined_dpi: '300'
+        user_defined_dpi: '300',
+        tessedit_char_whitelist: '가-힣A-Za-z0-9.,-:()/%+'
       });
 
       if (result?.data?.text) {
@@ -290,8 +341,8 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       ocrTexts.push(...originalResults);
     }
 
-    const rawText = chooseBestOcrText(ocrTexts);
-    const text = cleanOcrText(rawText);
+    const mergedLines = mergeOcrTexts(ocrTexts);
+    const text = mergedLines.length > 0 ? mergedLines.join('\n') : cleanOcrText(chooseBestOcrText(ocrTexts));
     const heuristicItems = heuristicExtractItems(text);
 
     console.log('OCR Result:', JSON.stringify(text));

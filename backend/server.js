@@ -163,7 +163,6 @@ app.post(
         '사과',
         '한우',
         '앞다리',
-        '후레시',
         '비타',
         '나트리',
         '가지'
@@ -278,38 +277,40 @@ app.post(
 
         });
 
-        foodKeywords.forEach(
-          food => {
+        if (!matched) {
+          foodKeywords.forEach(
+            food => {
 
-          if (
-            normalizedLine.includes(food)
-          ) {
+            if (
+              normalizedLine.includes(food)
+            ) {
 
-            matched = true;
+              matched = true;
 
-            possibleIngredients
-              .push({
+              possibleIngredients
+                .push({
 
-              id:
-                crypto.randomUUID(),
+                id:
+                  crypto.randomUUID(),
 
-              name: food,
+                name: food,
 
-              category:
-                '냉장',
+                category:
+                  '냉장',
 
-              expiryDate:
-                '2026-12-31',
+                expiryDate:
+                  '2026-12-31',
 
-              quantity: 1,
+                quantity: 1,
 
-              unit: '개'
+                unit: '개'
 
-            });
+              });
 
-          }
+            }
 
-        });
+          });
+        }
 
         if (!matched) {
 

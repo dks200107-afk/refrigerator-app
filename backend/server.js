@@ -14,6 +14,12 @@ const multer =
 const crypto =
   require('crypto');
 
+const fs =
+  require('fs');
+
+const path =
+  require('path');
+
 const Groq =
   require('groq-sdk');
 
@@ -83,9 +89,20 @@ app.post(
 
       }
 
+      const filePath =
+        path.resolve(req.file.path);
+
+      console.log(
+        'OCR file path:',
+        filePath
+      );
+
+      const imageBuffer =
+        fs.readFileSync(filePath);
+
       const result =
         await Tesseract.recognize(
-          req.file.path,
+          imageBuffer,
           'kor+eng'
         );
 

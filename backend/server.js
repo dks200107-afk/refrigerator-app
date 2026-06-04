@@ -316,63 +316,6 @@ const recognizeTextWithTesseract = async (buffer) => {
   return texts;
 };
 
-const extractIngredientsWithAI = async (ocrText) => {
-
-  try {
-
-    const completion =
-      await groq.chat.completions.create({
-
-        model: 'llama-3.1-8b-instant',
-
-        temperature: 0,
-
-        messages: [
-          {
-            role: 'user',
-
-            content: `
-다음은 영수증 OCR 결과이다.
-
-${ocrText}
-
-규칙
-
-- 실제 식품명만 추출
-- 가격 제거
-- 수량 제거
-- 의미없는 글자 제거
-- 중복 제거
-- 한글만 사용
-
-응답 형식
-
-[
- {"name":"아이스크림"},
- {"name":"참치"},
- {"name":"단무지"}
-]
-`
-          }
-        ]
-
-      });
-
-    const text =
-      completion.choices[0].message.content;
-
-    return JSON.parse(text);
-
-  } catch (err) {
-
-    console.error(err);
-
-    return [];
-
-  }
-
-};
-
 // ======================
 // OCR
 // ======================
@@ -412,25 +355,12 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     const mergedLines = mergeOcrTexts(ocrTexts);
     const text = mergedLines.length > 0 ? mergedLines.join('\n') : cleanOcrText(chooseBestOcrText(ocrTexts));
-const heuristicItems =
-  heuristicExtractItems(text);
+    const heuristicItems = heuristicExtractItems(text);
 
-console.log(
-  'OCR Result:',
-  JSON.stringify(text)
-);
+    console.log('OCR Result:', JSON.stringify(text));
+    console.log('Heuristic items:', heuristicItems);
 
-console.log(
-  'Heuristic items:',
-  heuristicItems
-);
-
-const uniqueIngredients =
-  heuristicItems.map(item => ({
-    ...item,
-    category:
-      autoCategory(item.name)
-  }));
+    const uniqueIngredients = heuristicItems;
 
     if (uniqueIngredients.length === 0) {
       return res.json({

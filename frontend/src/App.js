@@ -315,6 +315,19 @@ const handleOcrUpload =
           formData
         );
 
+      console.log(
+        'OCR API 응답:',
+        res.data
+      );
+
+      if (res.data.success === false) {
+        alert(
+          res.data.message ||
+            'OCR 처리 중 오류가 발생했습니다.'
+        );
+        return;
+      }
+
       const ocrIngredients =
         res.data.data ||
         res.data.ingredients ||
@@ -326,7 +339,8 @@ const handleOcrUpload =
       ) {
 
         alert(
-          '식재료를 찾지 못했습니다.'
+          res.data.message ||
+            '식재료를 찾지 못했습니다. 다른 영수증 사진을 시도해보세요.'
         );
 
         return;

@@ -89,13 +89,19 @@ app.post(
           'kor+eng'
         );
 
-      const text =
-        result.data.text;
+      const rawText =
+        result.data.text || '';
 
       console.log(
         'OCR 결과:',
-        text
+        JSON.stringify(rawText)
       );
+
+      const normalizedText =
+        rawText
+          .replace(/[^가-힣a-zA-Z0-9\n\r\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
 
       const possibleIngredients =
         [];
@@ -133,7 +139,13 @@ app.post(
         '치킨',
         '요거트',
         '바나나',
-        '사과'
+        '사과',
+        '한우',
+        '앞다리',
+        '후레시',
+        '비타',
+        '나트리',
+        '가지'
 
       ];
 
@@ -147,16 +159,26 @@ app.post(
       };
 
       const lines =
-        text.split('\n');
+        normalizedText
+          .split(/\r?\n/)
+          .map(line =>
+            line
+              .replace(/[0-9A-Za-z\s]+/g, '')
+              .trim()
+          )
+          .filter(Boolean);
 
       lines.forEach(line => {
+
+        const normalizedLine =
+          line.replace(/\s+/g, '');
 
         Object.keys(
           correctionMap
         ).forEach(wrong => {
 
           if (
-            line.includes(wrong)
+            normalizedLine.includes(wrong)
           ) {
 
             possibleIngredients
@@ -190,7 +212,7 @@ app.post(
           food => {
 
           if (
-            line.includes(food)
+            normalizedLine.includes(food)
           ) {
 
             possibleIngredients

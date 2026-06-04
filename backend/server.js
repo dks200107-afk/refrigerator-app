@@ -116,273 +116,65 @@ app.post(
         JSON.stringify(rawText)
       );
 
-      const cleanedText =
-        rawText
-          .replace(/[|]+/g, '\n')
-          .replace(/[^가-힣a-zA-Z0-9\n\r\s]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
+      const prompt = `다음은 영수증을 OCR로 인식한 텍스트입니다. 이 중에서 '식품' 또는 '식재료'에 해당하는 항목만 추출해주세요.
+결과를 반드시 아래 형식의 JSON 객체로만 반환하세요. 다른 설명은 절대 하지 마세요.
+{
+  "items": [
+    {
+      "name": "식품명",
+      "quantity": 1,
+      "unit": "개"
+    }
+  ]
+}
 
-      const possibleIngredients =
-        [];
+영수증 텍스트:
+${rawText}`;
 
-      const foodKeywords = [
+      let uniqueIngredients = [];
 
-        '우유',
-        '계란',
-        '두부',
-        '대파',
-        '양파',
-        '김치',
-        '삼겹살',
-        '닭가슴살',
-        '콜라',
-        '치즈',
-        '햄',
-        '라면',
-        '아이스크림',
-        '스팸',
-        '야채',
-        '김밥',
-        '참치',
-        '참치캔',
-        '만두',
-        '소시지',
-        '빵',
-        '과자',
-        '음료',
-        '사이다',
-        '김',
-        '쌀',
-        '고기',
-        '돼지',
-        '소고기',
-        '치킨',
-        '요거트',
-        '바나나',
-        '사과',
-        '한우',
-        '앞다리',
-        '비타',
-        '나트리',
-        '가지'
-
-      ];
-
-      const correctionMap = {
-
-        'AEH': '스팸',
-        '심태': '김밥',
-        '김반': '김밥',
-        '후레시참치': '참치'
-
-      };
-
-      const stopLinePatterns = [
-        '품명',
-        '단가',
-        '금액',
-        '계',
-        '합계',
-        '현금',
-        '영수증',
-        '감사합니다',
-        '감사 합니다',
-        'p02',
-        'pos2',
-        '번호',
-        '총',
-        '구매',
-        '거래번호',
-        '대표',
-        '카드결제',
-        '신한카드'
-      ];
-
-      const lines =
-        cleanedText
-          .split(/\r?\n/)
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .filter(line =>
-            !stopLinePatterns.some(pattern =>
-              line.toLowerCase().includes(pattern)
-            )
-          );
-
-      const extractNameFromLine = (line) => {
-        const cleanedLine = line.replace(/\s+/g, ' ').trim();
-        const amountMatch = cleanedLine.match(/^(.+?)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)$/);
-        if (amountMatch) {
-          return amountMatch[1].trim();
-        }
-
-        const shortMatch = cleanedLine.match(/^(.+?)\s+([0-9,]+)\s+([0-9,]+)$/);
-        if (shortMatch) {
-          return shortMatch[1].trim();
-        }
-
-        if (/\d/.test(cleanedLine)) {
-          return cleanedLine.replace(/[0-9,]+/g, '').trim();
-        }
-
-        return '';
-      };
-
-      lines.forEach(line => {
-
-        const rawLine = line;
-        const normalizedLine =
-          rawLine
-            .replace(/[^가-힣a-zA-Z0-9\s]/g, '')
-            .replace(/\s+/g, '')
-            .trim();
-
-        let matched = false;
-
-        Object.keys(
-          correctionMap
-        ).forEach(wrong => {
-
-          if (
-            normalizedLine.includes(wrong)
-          ) {
-
-            matched = true;
-
-            possibleIngredients
-              .push({
-
-              id:
-                crypto.randomUUID(),
-
-              name:
-                correctionMap[
-                  wrong
-                ],
-
-              category:
-                '냉장',
-
-              expiryDate:
-                '2026-12-31',
-
-              quantity: 1,
-
-              unit: '개'
-
-            });
-
-          }
-
+      try {
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [{ role: 'user', content: prompt }],
+          model: 'llama-3.1-8b-instant',
+          temperature: 0.1
         });
 
-        if (!matched) {
-          const itemName =
-            extractNameFromLine(rawLine)
-              .replace(/[^가-힣0-9A-Za-z\s]/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim();
-
-          if (
-            itemName.length >= 2 &&
-            !stopLinePatterns.some(pattern =>
-              itemName.toLowerCase().includes(pattern)
-            ) &&
-            /[가-힣]{2,}/.test(itemName)
-          ) {
-
-            matched = true;
-
-            possibleIngredients
-              .push({
-
-              id:
-                crypto.randomUUID(),
-
-              name: itemName,
-
-              category:
-                '냉장',
-
-              expiryDate:
-                '2026-12-31',
-
-              quantity: 1,
-
-              unit: '개'
-
-            });
-
+        const content = chatCompletion.choices[0]?.message?.content || "";
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.items && Array.isArray(parsed.items)) {
+            uniqueIngredients = parsed.items.map(item => ({
+              id: crypto.randomUUID(),
+              name: item.name || '알 수 없는 식품',
+              category: '냉장',
+              expiryDate: '2026-12-31',
+              quantity: item.quantity || 1,
+              unit: item.unit || '개'
+            }));
           }
         }
+      } catch (err) {
+        console.error("LLM 기반 파싱 중 오류 발생:", err);
+      }
 
-        if (!matched) {
-          for (const food of foodKeywords.sort((a, b) => b.length - a.length)) {
-            if (normalizedLine.includes(food)) {
-              matched = true;
-              possibleIngredients.push({
-                id: crypto.randomUUID(),
-                name: food,
-                category: '냉장',
-                expiryDate: '2026-12-31',
-                quantity: 1,
-                unit: '개'
-              });
-              break;
-            }
-          }
-        }
-
-      });
-
-      const uniqueIngredients = [
-
-        ...new Map(
-          possibleIngredients.map(
-            item => [
-              item.name,
-              item
-            ]
-          )
-        ).values()
-
-      ];
-
-      if (
-        uniqueIngredients.length
-        === 0
-      ) {
-
+      if (uniqueIngredients.length === 0) {
         return res.json({
-
           success: true,
-
-          message:
-            '식재료 인식 실패',
-
+          message: '식재료 인식 실패',
           data: [],
-
           ingredients: [],
-
           ocrText: text
-
         });
-
       }
 
       res.json({
-
         success: true,
-
-        data:
-          uniqueIngredients,
-
-        ingredients:
-          uniqueIngredients,
-
+        data: uniqueIngredients,
+        ingredients: uniqueIngredients,
         ocrText: text
-
       });
 
     } catch (error) {

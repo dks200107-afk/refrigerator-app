@@ -116,8 +116,9 @@ app.post(
         JSON.stringify(rawText)
       );
 
-      const normalizedText =
+      const cleanedText =
         rawText
+          .replace(/[|]+/g, '\n')
           .replace(/[^가-힣a-zA-Z0-9\n\r\s]/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
@@ -144,6 +145,7 @@ app.post(
         '야채',
         '김밥',
         '참치',
+        '참치캔',
         '만두',
         '소시지',
         '빵',
@@ -190,11 +192,16 @@ app.post(
         'p02',
         'pos2',
         '번호',
-        '총'
+        '총',
+        '구매',
+        '거래번호',
+        '대표',
+        '카드결제',
+        '신한카드'
       ];
 
       const lines =
-        normalizedText
+        cleanedText
           .split(/\r?\n/)
           .map(line => line.trim())
           .filter(line => line.length > 0)
@@ -204,16 +211,33 @@ app.post(
             )
           );
 
+      const extractNameFromLine = (line) => {
+        const cleanedLine = line.replace(/\s+/g, ' ').trim();
+        const amountMatch = cleanedLine.match(/^(.+?)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)$/);
+        if (amountMatch) {
+          return amountMatch[1].trim();
+        }
+
+        const shortMatch = cleanedLine.match(/^(.+?)\s+([0-9,]+)\s+([0-9,]+)$/);
+        if (shortMatch) {
+          return shortMatch[1].trim();
+        }
+
+        if (/\d/.test(cleanedLine)) {
+          return cleanedLine.replace(/[0-9,]+/g, '').trim();
+        }
+
+        return '';
+      };
+
       lines.forEach(line => {
 
         const rawLine = line;
-        const lineWithoutNumbers =
-          rawLine
-            .replace(/[0-9A-Za-z\s]+/g, '')
-            .trim();
-
         const normalizedLine =
-          lineWithoutNumbers.replace(/\s+/g, '');
+          rawLine
+            .replace(/[^가-힣a-zA-Z0-9\s]/g, '')
+            .replace(/\s+/g, '')
+            .trim();
 
         let matched = false;
 
@@ -289,19 +313,18 @@ app.post(
 
         if (!matched) {
 
-          const prefix = rawLine
-            .split(/\d{3,}/)[0]
-            .replace(/[^가-힣\s]/g, ' ')
-            .trim();
-
           const itemName =
-            prefix.replace(/\s+/g, ' ');
+            extractNameFromLine(rawLine)
+              .replace(/[^가-힣0-9A-Za-z\s]/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
 
           if (
             itemName.length >= 2 &&
             !stopLinePatterns.some(pattern =>
-              itemName.includes(pattern)
-            )
+              itemName.toLowerCase().includes(pattern)
+            ) &&
+            /[가-힣]{2,}/.test(itemName)
           ) {
 
             possibleIngredients

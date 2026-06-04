@@ -239,8 +239,14 @@ app.post(
 
         return res.json({
 
+          success: true,
+
           message:
             '식재료 인식 실패',
+
+          data: [],
+
+          ingredients: [],
 
           ocrText: text
 
@@ -248,16 +254,19 @@ app.post(
 
       }
 
-res.json({
+      res.json({
 
-  success: true,
+        success: true,
 
-  ingredients:
-    uniqueIngredients,
+        data:
+          uniqueIngredients,
 
-  ocrText: text
+        ingredients:
+          uniqueIngredients,
 
-});
+        ocrText: text
+
+      });
 
     } catch (error) {
 

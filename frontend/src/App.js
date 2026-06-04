@@ -316,7 +316,9 @@ const handleOcrUpload =
         );
 
       const ocrIngredients =
-        res.data.data;
+        res.data.data ||
+        res.data.ingredients ||
+        [];
 
       if (
         !ocrIngredients ||

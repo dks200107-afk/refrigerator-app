@@ -109,6 +109,8 @@ app.post(
       const rawText =
         result.data.text || '';
 
+      const text = rawText;
+
       console.log(
         'OCR 결과:',
         JSON.stringify(rawText)

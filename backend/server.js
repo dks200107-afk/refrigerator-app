@@ -49,15 +49,25 @@ const groq = new Groq({
 });
 
 const chooseBestOcrText = (texts) => {
-  const scored = texts.map(text => {
-    const koreanCount = (text.match(/[가-힣]/g) || []).length;
-    const alphaCount = (text.match(/[a-zA-Z]/g) || []).length;
-    const digitCount = (text.match(/[0-9]/g) || []).length;
-    return {
+  const scoreText = (text) => {
+    const cleaned = text.replace(/[^가-힣a-zA-Z0-9\s\.\,\-\:\(\)\/\+\%]/g, '');
+    const koreanCount = (cleaned.match(/[가-힣]/g) || []).length;
+    const alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
+    const digitCount = (cleaned.match(/[0-9]/g) || []).length;
+    const punctuationCount = (cleaned.match(/[\.\,\-\:\(\)\/\+\%]/g) || []).length;
+    const totalChars = cleaned.length || 1;
+    const badRatio = 1 - (koreanCount + alphaCount + digitCount) / totalChars;
+
+    return koreanCount * 4 + alphaCount * 3 + digitCount * 1 - punctuationCount * 2 - badRatio * 10;
+  };
+
+  const scored = texts
+    .filter(text => text && text.trim().length > 0)
+    .map(text => ({
       text,
-      score: koreanCount * 3 + alphaCount * 2 + digitCount
-    };
-  });
+      score: scoreText(text)
+    }));
+
   scored.sort((a, b) => b.score - a.score);
   return scored[0]?.text || '';
 };
@@ -99,6 +109,30 @@ const isReceiptNumericToken = (token) => {
     || /^\d+$/i.test(token);
 };
 
+const isLikelyReceiptItemLine = (line) => {
+  const cleaned = line.replace(/[^가-힣A-Za-z0-9\s\.\,\-\:\(\)\/\+\%]/g, ' ').trim();
+  if (!cleaned || cleaned.length < 3) return false;
+  if (/^(합계|총액|현금|카드|잔액|포인트|쿠폰|할인|부가세|세액|매장|계산서)/i.test(cleaned)) return false;
+  if (/^[0-9\s\.,]+$/.test(cleaned)) return false;
+
+  const tokens = cleaned.split(/\s+/);
+  const longTokens = tokens.filter(t => t.length >= 2);
+  const shortTokens = tokens.filter(t => t.length === 1);
+  if (shortTokens.length > longTokens.length) return false;
+
+  const alphaCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
+  const koreanCount = (cleaned.match(/[가-힣]/g) || []).length;
+  if (koreanCount + alphaCount < 2) return false;
+
+  const punctuationCount = (cleaned.match(/[\.\,\-\:\(\)\/\+\%]/g) || []).length;
+  if (punctuationCount > cleaned.length * 0.25) return false;
+
+  if (/\b(LV|Lv|lv|ML|ml)\b/.test(cleaned)) return false;
+  if (/\b(할\.|할)\b/.test(cleaned) && !/\b(할인)\b/.test(cleaned)) return false;
+
+  return true;
+};
+
 const heuristicExtractItems = (text) => {
   const lines = text
     .split('\n')
@@ -108,8 +142,8 @@ const heuristicExtractItems = (text) => {
   const candidates = [];
 
   for (const line of lines) {
-    if (/^[0-9\s\.,]+$/.test(line)) continue;
-    if (/^(합계|총액|현금|카드|잔액|포인트|쿠폰)/i.test(line)) continue;
+    if (!isLikelyReceiptItemLine(line)) continue;
+
     const cleaned = line.replace(/\s{2,}/g, ' ').trim();
     const tokens = cleaned.split(/\s+/);
     while (tokens.length > 0 && isReceiptNumericToken(tokens[tokens.length - 1])) {
@@ -117,7 +151,7 @@ const heuristicExtractItems = (text) => {
     }
     const priceRemoved = tokens.join(' ').trim();
 
-    if (priceRemoved.length > 1 && /[가-힣]/.test(priceRemoved)) {
+    if (priceRemoved.length > 1 && /[가-힣A-Za-z]/.test(priceRemoved)) {
       candidates.push(normalizeProductName(priceRemoved));
     }
   }

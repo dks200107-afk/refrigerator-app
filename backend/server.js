@@ -56,21 +56,44 @@ const preprocessReceiptImage = async (buffer) => {
   try {
     let image = await Jimp.read(buffer);
 
-    image
-      .greyscale()
-      .contrast(0.35)
-      .brightness(0.05);
+    // 이미지 크기 정규화
+    const maxWidth = 2000;
+    const maxHeight = 2500;
+    
+    if (image.bitmap.width > maxWidth || image.bitmap.height > maxHeight) {
+      image.scaleToFit(maxWidth, maxHeight);
+    }
 
-    image.resize(1600, Jimp.AUTO);
+    // 회색조 변환
+    image.greyscale();
 
-    // Binary threshold
-    const threshold = 180;
+    // 대비 증가 (여러 번)
+    for (let i = 0; i < 2; i++) {
+      image.contrast(0.4);
+    }
+
+    // 밝기 조정
+    image.brightness(0.1);
+
+    // 샤픈 필터 (선명도 개선)
+    image.sharpen();
+
+    // 노이즈 제거를 위한 Dilate 효과
+    const kernel = [
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1]
+    ];
+
+    // 이진화 (Binary thresholding) - 더 공격적
+    const threshold = 170;
     image.scan(0, 0, image.bitmap.width, image.bitmap.height, function (x, y, idx) {
       const gray = this.bitmap.data[idx];
       const value = gray > threshold ? 255 : 0;
       this.bitmap.data[idx] = value;
       this.bitmap.data[idx + 1] = value;
       this.bitmap.data[idx + 2] = value;
+      this.bitmap.data[idx + 3] = 255;
     });
 
     return await image.getBuffer(Jimp.MIME_PNG);
@@ -81,11 +104,19 @@ const preprocessReceiptImage = async (buffer) => {
 };
 
 const cleanOcrText = (text) => {
-  return (text || '')
-    .replace(/\r/g, '\n')
-    .replace(/[^ -\uAC00-\uD7A3\s\.\,\-\:\(\)\/\+]+/g, ' ')
-    .replace(/[\t ]+/g, ' ')
-    .replace(/\n{2,}/g, '\n')
+  if (!text) return '';
+  
+  return text
+    .split('\n')
+    .map(line => {
+      // 한글, 영문, 숫자, 기본 기호만 유지
+      return line
+        .replace(/[^가-힣a-zA-Z0-9\s\.\,\-\:\(\)\/\+\%]/g, '')
+        .replace(/[\t ]+/g, ' ')
+        .trim();
+    })
+    .filter(line => line.length > 0)
+    .join('\n')
     .trim();
 };
 
@@ -94,6 +125,8 @@ const cleanOcrText = (text) => {
 // ======================
 
 app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
+  let filePath = null;
+  
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -101,7 +134,7 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       });
     }
 
-    const filePath = path.resolve(req.file.path);
+    filePath = path.resolve(req.file.path);
     console.log('OCR file path:', filePath);
 
     const imageBuffer = fs.readFileSync(filePath);
@@ -114,33 +147,38 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
       preprocessedBuffer = imageBuffer;
     }
 
+    // Tesseract 옵션 최적화
     const result = await Tesseract.recognize(
       preprocessedBuffer,
       'kor+eng',
       {
-        tessedit_pageseg_mode: 3,
-        tessedit_ocr_engine_mode: 1
+        tessedit_pageseg_mode: 3,        // Fully automatic page segmentation
+        tessedit_ocr_engine_mode: 1,      // LSTM only
+        preserve_interword_spaces: '1'
       }
     );
 
     const rawText = result.data.text || '';
     const text = cleanOcrText(rawText);
 
+    console.log('OCR confidence:', result.data.confidence);
     console.log('OCR Result:', JSON.stringify(text));
 
-    const prompt = `다음은 영수증을 OCR로 인식한 텍스트입니다. 이 중에서 '식품' 또는 '식재료'에 해당하는 항목만 추출해주세요.
-결과를 반드시 아래 형식의 JSON 객체로만 반환하세요. 다른 설명은 절대 하지 마세요.
+    const prompt = `다음은 영수증 OCR 텍스트입니다. 이 중에서 실제 식품/식재료 항목을 찾아 추출하세요.
+숫자만 있거나 의미 없는 텍스트는 제외하세요.
+
+반드시 JSON 형식으로만 응답:
 {
   "items": [
     {
-      "name": "식품명",
+      "name": "식품명(영어/한글)",
       "quantity": 1,
       "unit": "개"
     }
   ]
 }
 
-영수증 텍스트:
+영수증 OCR 텍스트:
 ${text}`;
 
     let uniqueIngredients = [];
@@ -149,7 +187,8 @@ ${text}`;
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
         model: 'llama-3.1-8b-instant',
-        temperature: 0.1
+        temperature: 0.2,
+        max_tokens: 500
       });
 
       const content = chatCompletion.choices[0]?.message?.content || "";
@@ -158,26 +197,33 @@ ${text}`;
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.items && Array.isArray(parsed.items)) {
-          uniqueIngredients = parsed.items.map(item => ({
-            id: crypto.randomUUID(),
-            name: item.name || '알 수 없는 식품',
-            category: '냉장',
-            expiryDate: '2026-12-31',
-            quantity: item.quantity || 1,
-            unit: item.unit || '개'
-          }));
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.items && Array.isArray(parsed.items) && parsed.items.length > 0) {
+            uniqueIngredients = parsed.items
+              .filter(item => item.name && item.name.trim().length > 0)
+              .slice(0, 10)
+              .map(item => ({
+                id: crypto.randomUUID(),
+                name: item.name.trim(),
+                category: '냉장',
+                expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                quantity: item.quantity || 1,
+                unit: item.unit || '개'
+              }));
+          }
+        } catch (parseErr) {
+          console.error('JSON parse error:', parseErr.message);
         }
       }
     } catch (err) {
-      console.error("LLM parsing error:", err);
+      console.error("LLM error:", err.message);
     }
 
     if (uniqueIngredients.length === 0) {
       return res.json({
         success: true,
-        message: '식재료 인식 실패',
+        message: '식재료 인식 실패 - 영수증 이미지를 다시 확인해주세요',
         data: [],
         ingredients: [],
         ocrText: text
@@ -191,17 +237,22 @@ ${text}`;
       ocrText: text
     });
 
-    // Clean up uploaded file
-    fs.unlink(filePath, (err) => {
-      if (err) console.error('File cleanup error:', err);
-    });
-
   } catch (error) {
     console.error('OCR Error:', error);
     res.status(500).json({
       error: 'OCR 처리 실패',
       details: error.message
     });
+  } finally {
+    // 파일 정리 (동기 처리로 변경)
+    if (filePath && fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        console.log('File cleaned:', filePath);
+      } catch (err) {
+        console.error('File cleanup error:', err.message);
+      }
+    }
   }
 });
 

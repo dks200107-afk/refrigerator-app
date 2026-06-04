@@ -278,42 +278,6 @@ app.post(
         });
 
         if (!matched) {
-          foodKeywords.forEach(
-            food => {
-
-            if (
-              normalizedLine.includes(food)
-            ) {
-
-              matched = true;
-
-              possibleIngredients
-                .push({
-
-                id:
-                  crypto.randomUUID(),
-
-                name: food,
-
-                category:
-                  '냉장',
-
-                expiryDate:
-                  '2026-12-31',
-
-                quantity: 1,
-
-                unit: '개'
-
-              });
-
-            }
-
-          });
-        }
-
-        if (!matched) {
-
           const itemName =
             extractNameFromLine(rawLine)
               .replace(/[^가-힣0-9A-Za-z\s]/g, ' ')
@@ -327,6 +291,8 @@ app.post(
             ) &&
             /[가-힣]{2,}/.test(itemName)
           ) {
+
+            matched = true;
 
             possibleIngredients
               .push({
@@ -349,7 +315,23 @@ app.post(
             });
 
           }
+        }
 
+        if (!matched) {
+          for (const food of foodKeywords.sort((a, b) => b.length - a.length)) {
+            if (normalizedLine.includes(food)) {
+              matched = true;
+              possibleIngredients.push({
+                id: crypto.randomUUID(),
+                name: food,
+                category: '냉장',
+                expiryDate: '2026-12-31',
+                quantity: 1,
+                unit: '개'
+              });
+              break;
+            }
+          }
         }
 
       });

@@ -292,18 +292,18 @@ const handleGoogleLogin =
 const handleOcrUpload =
   async (e) => {
 
-    const file =
-      e.target.files[0];
+    const input = e.target;
+    const file = input.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      if (galleryInputRef.current) {
+        galleryInputRef.current.value = '';
+      }
+      return;
+    }
 
-    const formData =
-      new FormData();
-
-    formData.append(
-      'receipt',
-      file
-    );
+    const formData = new FormData();
+    formData.append('receipt', file);
 
     alert('OCR 분석 시작');
 
@@ -393,6 +393,13 @@ const handleOcrUpload =
         'OCR 등록 실패'
       );
 
+    } finally {
+      if (input) {
+        input.value = '';
+      }
+      if (galleryInputRef.current) {
+        galleryInputRef.current.value = '';
+      }
     }
 
   };

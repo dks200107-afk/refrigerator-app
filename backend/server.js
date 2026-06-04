@@ -158,20 +158,45 @@ app.post(
 
       };
 
+      const stopLinePatterns = [
+        '품명',
+        '단가',
+        '금액',
+        '계',
+        '합계',
+        '현금',
+        '영수증',
+        '감사합니다',
+        '감사 합니다',
+        'p02',
+        'pos2',
+        '번호',
+        '총'
+      ];
+
       const lines =
         normalizedText
           .split(/\r?\n/)
-          .map(line =>
-            line
-              .replace(/[0-9A-Za-z\s]+/g, '')
-              .trim()
-          )
-          .filter(Boolean);
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .filter(line =>
+            !stopLinePatterns.some(pattern =>
+              line.toLowerCase().includes(pattern)
+            )
+          );
 
       lines.forEach(line => {
 
+        const rawLine = line;
+        const lineWithoutNumbers =
+          rawLine
+            .replace(/[0-9A-Za-z\s]+/g, '')
+            .trim();
+
         const normalizedLine =
-          line.replace(/\s+/g, '');
+          lineWithoutNumbers.replace(/\s+/g, '');
+
+        let matched = false;
 
         Object.keys(
           correctionMap
@@ -180,6 +205,8 @@ app.post(
           if (
             normalizedLine.includes(wrong)
           ) {
+
+            matched = true;
 
             possibleIngredients
               .push({
@@ -215,6 +242,8 @@ app.post(
             normalizedLine.includes(food)
           ) {
 
+            matched = true;
+
             possibleIngredients
               .push({
 
@@ -238,6 +267,47 @@ app.post(
           }
 
         });
+
+        if (!matched) {
+
+          const prefix = rawLine
+            .split(/\d{3,}/)[0]
+            .replace(/[^가-힣\s]/g, ' ')
+            .trim();
+
+          const itemName =
+            prefix.replace(/\s+/g, ' ');
+
+          if (
+            itemName.length >= 2 &&
+            !stopLinePatterns.some(pattern =>
+              itemName.includes(pattern)
+            )
+          ) {
+
+            possibleIngredients
+              .push({
+
+              id:
+                crypto.randomUUID(),
+
+              name: itemName,
+
+              category:
+                '냉장',
+
+              expiryDate:
+                '2026-12-31',
+
+              quantity: 1,
+
+              unit: '개'
+
+            });
+
+          }
+
+        }
 
       });
 

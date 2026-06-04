@@ -551,7 +551,7 @@ if (!ingredientNames) {
       <div className="app-wrapper centered-screen">
 
         <h1>
-          냉장고 관리 프로그램 🧊
+         AI 기반 냉장고 관리 시스템 🧊
         </h1>
 
         <button
@@ -575,7 +575,7 @@ if (!ingredientNames) {
     <div className="app-wrapper">
 
       <h1>
-        냉장고 관리 프로그램 🧊
+        AI 기반 냉장고 관리 시스템 🧊
       </h1>
 
       {/* 로그인 */}
